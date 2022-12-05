@@ -1,0 +1,104 @@
+﻿using System;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using Cysharp.Threading.Tasks;
+
+namespace ZBase.Foundation.PubSub
+{
+    /// <summary>
+    /// Anonymous Subscriber allows registering handlers that take no message argument
+    /// to the <see cref="GlobalScope"/>
+    /// </summary>
+    public static class AnonSubscriberGlobal
+    {
+        /// <summary>
+        /// Remove empty handler groups in the <see cref="GlobalScope"/> to optimize performance.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Compress(this AnonSubscriber self)
+        {
+            self.Global().Compress();
+        }
+
+        /// <summary>
+        /// Subscribes to the <see cref="GlobalScope"/>
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ISubscription Subscribe(
+              this AnonSubscriber self
+            , Action handler
+            , int order = 0
+        )
+        {
+            return self.Global().Subscribe(handler, order);
+        }
+
+        /// <summary>
+        /// Subscribes to the <see cref="GlobalScope"/>
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ISubscription Subscribe(
+              this AnonSubscriber self
+            , Func<CancellationToken, UniTask> handler
+            , int order = 0
+        )
+        {
+            return self.Global().Subscribe(handler, order);
+        }
+
+        /// <summary>
+        /// Subscribes to the <see cref="GlobalScope"/>
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ISubscription Subscribe(
+              this AnonSubscriber self
+            , Func<UniTask> handler
+            , int order = 0
+        )
+        {
+            return self.Global().Subscribe(handler, order);
+        }
+
+        /// <summary>
+        /// Subscribes to the <see cref="GlobalScope"/>
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Subscribe(
+              this AnonSubscriber self
+            , Action handler
+            , in CancellationToken unsubscribeToken
+            , int order = 0
+        )
+        {
+            self.Global().Subscribe(handler, unsubscribeToken, order);
+        }
+
+        /// <summary>
+        /// Subscribes to the <see cref="GlobalScope"/>
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Subscribe(
+              this AnonSubscriber self
+            , Func<CancellationToken, UniTask> handler
+            , in CancellationToken unsubscribeToken
+            , int order = 0
+        )
+        {
+            self.Global().Subscribe(handler, unsubscribeToken, order);
+        }
+
+        /// <summary>
+        /// Subscribes to the <see cref="GlobalScope"/>
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Subscribe(
+              this AnonSubscriber self
+            , Func<UniTask> handler
+            , in CancellationToken unsubscribeToken
+            , int order = 0
+        )
+        {
+            self.Global().Subscribe(handler, unsubscribeToken, order);
+        }
+    }
+}

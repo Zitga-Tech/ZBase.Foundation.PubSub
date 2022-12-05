@@ -1,0 +1,28 @@
+{
+  "name": "com.zbase.foundation.pubsub",
+  "displayName": "ZBase.Foundation.PubSub",
+  "version": "1.0.0",
+  "type": "library",
+  "unity": "2021.3",
+  "dependencies": {
+    "com.zbase.foundation": "1.0.0",
+    "com.zbase.collections.pooled": "2.7.1"
+  },
+  "scopedRegistries": [
+    {
+      "name": "package.openupm.com",
+      "url": "https://package.openupm.com",
+      "scopes": [
+        "com.zbase.foundation",
+        "com.zbase.collections.pooled"
+      ]
+    }
+  ],
+  "samples": [
+    {
+      "displayName": "Samples",
+      "description": "Samples for PubSub",
+      "path": "Samples~"
+    }
+  ]
+}
