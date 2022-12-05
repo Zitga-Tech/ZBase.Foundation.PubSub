@@ -2,7 +2,7 @@
   "dependencies": {
     "com.cysharp.unitask": "2.3.3",
     "com.cysharp.zstring": "2.5.0",
-    "com.laicasaane.collections.pooled": "2.7.1",
+    "com.zbase.collections.pooled": "2.8.1",
     "com.unity.ide.rider": "3.0.16",
     "com.unity.ide.visualstudio": "2.0.16",
     "com.unity.ide.vscode": "1.2.5",
@@ -39,18 +39,27 @@
     "com.unity.modules.video": "1.0.0",
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
-    "com.unity.modules.xr": "1.0.0"
+    "com.unity.modules.xr": "1.0.0",
+    "com.zbase.foundation": "1.0.0"
   },
   "scopedRegistries": [
+    {
+        "name": "Unity NuGet",
+        "url": "https://unitynuget-registry.azurewebsites.net",
+        "scopes": [
+            "org.nuget"
+        ]
+    },
     {
       "name": "package.openupm.com",
       "url": "https://package.openupm.com",
       "scopes": [
         "com.cysharp.unitask",
         "com.cysharp.zstring",
-        "com.laicasaane.collections.pooled",
-        "com.laicasaane.unity.pooling",
+        "com.faster-games.t4",
         "com.openupm",
+        "com.zbase.collections.pooled",
+        "com.zbase.foundation",
         "org.nuget.system.runtime.compilerservices.unsafe"
       ]
     }

@@ -5,19 +5,11 @@
   "type": "library",
   "unity": "2021.3",
   "dependencies": {
-    "com.zbase.foundation": "1.0.0",
-    "com.zbase.collections.pooled": "2.7.1"
+    "org.nuget.system.runtime.compilerservices.unsafe": "6.0.0",
+    "com.cysharp.unitask": "2.3.3",
+    "com.zbase.collections.pooled": "2.8.1",
+    "com.zbase.foundation": "1.0.0"
   },
-  "scopedRegistries": [
-    {
-      "name": "package.openupm.com",
-      "url": "https://package.openupm.com",
-      "scopes": [
-        "com.zbase.foundation",
-        "com.zbase.collections.pooled"
-      ]
-    }
-  ],
   "samples": [
     {
       "displayName": "Samples",
