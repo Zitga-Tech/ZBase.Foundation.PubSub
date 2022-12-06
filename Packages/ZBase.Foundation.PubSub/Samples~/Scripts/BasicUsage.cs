@@ -2,6 +2,8 @@ using System;
 using System.Threading;
 using UnityEngine;
 using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
+using UnityEngine.UI;
 
 namespace ZBase.Foundation.PubSub.Samples
 {
@@ -10,23 +12,71 @@ namespace ZBase.Foundation.PubSub.Samples
     /// </summary>
     public class BasicUsage : MonoBehaviour
     {
+        [SerializeField]
+        private Button _subscribeButton;
+
+        [SerializeField]
+        private Button _unsubscribeButton;
+
         private readonly Messenger _messenger = new();
+        private readonly List<ISubscription> _subscriptions = new();
         private CancellationTokenSource _cts;
 
         private void Awake()
         {
-            Application.targetFrameRate = 60;    
+            Application.targetFrameRate = 60;
+
+            _subscribeButton.onClick.AddListener(SubscribeToAllMessages);
+            _unsubscribeButton.onClick.AddListener(UnsubscribeFromAllMessages);
         }
 
         private void Start()
         {
+            SubscribeToAllMessages();
+        }
+
+        private void SubscribeToAllMessages()
+        {
+            var subscriptions = _subscriptions;
+
+            if (subscriptions.Count > 0)
+            {
+                return;
+            }
+
             var sub = _messenger.MessageSubscriber;
 
-            sub.Subscribe<FooMessage>(FooHandler);
-            sub.Subscribe<BarMessage>(BarHandler);
-            sub.Subscribe<TimeMessage>(TimeHandlerAsync);
-            sub.Subscribe<FrameMessage>(FrameHandlerAsync);
-            sub.Subscribe<FrameMessage>(FrameHandlerAsyncCancellable);
+            sub.Subscribe<FooMessage>(FooHandler).AddTo(subscriptions);
+            sub.Subscribe<BarMessage>(BarHandler).AddTo(subscriptions);
+            sub.Subscribe<TimeMessage>(TimeHandlerAsync).AddTo(subscriptions);
+            sub.Subscribe<FrameMessage>(FrameHandlerAsync).AddTo(subscriptions);
+            sub.Subscribe<FrameMessage>(FrameHandlerAsyncCancellable).AddTo(subscriptions);
+
+            Debug.Log("System has subscribed to all messages.");
+        }
+
+        private void UnsubscribeFromAllMessages()
+        {
+            var subscriptions = _subscriptions;
+
+            if (subscriptions.Count <= 0)
+            {
+                return;
+            }
+
+            var count = subscriptions.Count;
+
+            for (var i = 0; i < count; i++)
+            {
+                subscriptions[i]?.Unsubscribe();
+
+                /// Same functionality:
+                // subscriptions[i].Dispose();
+            }
+
+            subscriptions.Clear();
+
+            Debug.Log("System has unsubscribed from all messages.");
         }
 
         private void Update()

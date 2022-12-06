@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Threading;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace ZBase.Foundation.PubSub.Samples
 {
@@ -7,21 +9,62 @@ namespace ZBase.Foundation.PubSub.Samples
     /// </summary>
     public class SpecificScopeUsage : MonoBehaviour
     {
+        [SerializeField]
+        private Button _subscribeButton;
+
+        [SerializeField]
+        private Button _unsubscribeButton;
+
         private readonly Messenger _messenger = new();
+        private CancellationTokenSource _unsubcribeCts;
 
         private void Awake()
         {
             Application.targetFrameRate = 60;
+
+            _subscribeButton.onClick.AddListener(SubscribeToAllMessages);
+            _unsubscribeButton.onClick.AddListener(UnsubscribeFromAllMessages);
         }
 
         private void Start()
         {
-            var sub = _messenger.MessageSubscriber;
+            SubscribeToAllMessages();
+        }
 
-            sub.Scope(new IdScope(5)).Subscribe<FooMessage>(FooHandler_In_IdScope);
-            sub.Scope(new NameScope("Bar")).Subscribe<BarMessage>(BarHandler_In_NameScope);
-            sub.Scope(new UnityObjectScope(this)).Subscribe<FooMessage>(FooHandler_In_MonoBehaviourScope);
-            sub.Scope(new UnityObjectScope(this.gameObject)).Subscribe<FooMessage>(FooHandler_In_GameObjectScope);
+        private void SubscribeToAllMessages()
+        {
+            if (_unsubcribeCts != null)
+            {
+                return;
+            }
+
+            _unsubcribeCts = new();
+
+            var sub = _messenger.MessageSubscriber;
+            var token = _unsubcribeCts.Token;
+
+            sub.Scope(new IdScope(5))
+               .Subscribe<FooMessage>(FooHandler_In_IdScope, unsubscribeToken: token);
+
+            sub.Scope(new NameScope("Bar"))
+               .Subscribe<BarMessage>(BarHandler_In_NameScope, unsubscribeToken: token);
+
+            sub.Scope(new UnityObjectScope(this))
+               .Subscribe<FooMessage>(FooHandler_In_MonoBehaviourScope, unsubscribeToken: token);
+
+            sub.Scope(new UnityObjectScope(this.gameObject))
+               .Subscribe<FooMessage>(FooHandler_In_GameObjectScope, unsubscribeToken: token);
+
+            Debug.Log("System has subscribed to all messages.");
+        }
+
+        private void UnsubscribeFromAllMessages()
+        {
+            _unsubcribeCts?.Cancel();
+            _unsubcribeCts?.Dispose();
+            _unsubcribeCts = null;
+
+            Debug.Log("System has unsubscribed from all messages.");
         }
 
         private void Update()
