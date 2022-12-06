@@ -2,11 +2,9 @@
     "name": "ZBase.Foundation.PubSub",
     "rootNamespace": "ZBase.Foundation.PubSub",
     "references": [
-        "Collections.Pooled",
-        "Collections.Pooled.Generic",
-        "Collections.Pooled.Generic.Internals",
         "UniTask",
-        "ZBase.Foundation"
+        "ZBase.Foundation",
+        "ZBase.Collections.Pooled"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

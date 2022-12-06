@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
-using Collections.Pooled.Generic;
-using Collections.Pooled.Generic.Internals.Unsafe;
+using ZBase.Collections.Pooled.Generic;
+using ZBase.Collections.Pooled.Generic.Internals.Unsafe;
 using Cysharp.Threading.Tasks;
 
 namespace ZBase.Foundation.PubSub.Internals

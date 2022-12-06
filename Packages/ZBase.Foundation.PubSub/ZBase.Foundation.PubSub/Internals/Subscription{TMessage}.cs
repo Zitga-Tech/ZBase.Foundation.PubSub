@@ -1,4 +1,4 @@
-﻿using CPG = Collections.Pooled.Generic;
+﻿using ZCPG = ZBase.Collections.Pooled.Generic;
 
 namespace ZBase.Foundation.PubSub
 {
@@ -7,13 +7,13 @@ namespace ZBase.Foundation.PubSub
         public static readonly Subscription<TMessage> None = new(default, default);
 
         private MessageHandler<TMessage> _handler;
-        private CPG.ArrayHashSet<MessageHandler<TMessage>> _handlers;
+        private ZCPG.ArrayHashSet<MessageHandler<TMessage>> _handlers;
 
         private bool _canDispose;
 
         public Subscription(
               MessageHandler<TMessage> handler
-            , CPG.ArrayHashSet<MessageHandler<TMessage>> handlers
+            , ZCPG.ArrayHashSet<MessageHandler<TMessage>> handlers
         )
         {
             _handler = handler;

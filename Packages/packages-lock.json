@@ -14,13 +14,11 @@
       "dependencies": {},
       "url": "https://package.openupm.com"
     },
-    "com.laicasaane.collections.pooled": {
-      "version": "2.7.1",
-      "depth": 0,
+    "com.faster-games.t4": {
+      "version": "1.4.1",
+      "depth": 1,
       "source": "registry",
-      "dependencies": {
-        "org.nuget.system.runtime.compilerservices.unsafe": "6.0.0"
-      },
+      "dependencies": {},
       "url": "https://package.openupm.com"
     },
     "com.unity.ext.nunit": {
@@ -84,13 +82,36 @@
         "com.unity.modules.imgui": "1.0.0"
       }
     },
+    "com.zbase.collections.pooled": {
+      "version": "2.8.1",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "org.nuget.system.runtime.compilerservices.unsafe": "6.0.0"
+      },
+      "url": "https://package.openupm.com"
+    },
+    "com.zbase.foundation": {
+      "version": "1.0.0",
+      "depth": 0,
+      "source": "registry",
+      "dependencies": {
+        "com.cysharp.zstring": "2.5.0",
+        "com.cysharp.unitask": "2.3.1",
+        "org.nuget.system.runtime.compilerservices.unsafe": "6.0.0",
+        "com.faster-games.t4": "1.4.1"
+      },
+      "url": "https://package.openupm.com"
+    },
     "com.zbase.foundation.pubsub": {
       "version": "file:ZBase.Foundation.PubSub",
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.zbase.foundation": "1.0.0",
-        "com.zbase.collections.pooled": "2.7.1"
+        "org.nuget.system.runtime.compilerservices.unsafe": "6.0.0",
+        "com.cysharp.unitask": "2.3.3",
+        "com.zbase.collections.pooled": "2.8.1",
+        "com.zbase.foundation": "1.0.0"
       }
     },
     "org.nuget.system.runtime.compilerservices.unsafe": {

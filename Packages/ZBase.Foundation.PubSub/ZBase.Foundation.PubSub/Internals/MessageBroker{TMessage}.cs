@@ -1,18 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using Collections.Pooled.Generic.Internals.Unsafe;
 using Cysharp.Threading.Tasks;
+using ZBase.Collections.Pooled.Generic.Internals.Unsafe;
 
-using CPG = Collections.Pooled.Generic;
+using ZCPG = ZBase.Collections.Pooled.Generic;
 
 namespace ZBase.Foundation.PubSub.Internals
 {
     internal sealed class MessageBroker<TMessage>
         : MessageBroker
     {
-        private readonly CPG.List<int> _ordering = new(1);
-        private readonly Dictionary<int, CPG.ArrayHashSet<MessageHandler<TMessage>>> _handlerMap = new(1);
+        private readonly ZCPG.List<int> _ordering = new(1);
+        private readonly Dictionary<int, ZCPG.ArrayHashSet<MessageHandler<TMessage>>> _handlerMap = new(1);
 
         private CappedArrayPool<UniTask> _taskArrayPool;
 
@@ -49,7 +49,7 @@ namespace ZBase.Foundation.PubSub.Internals
         }
 
         private static async UniTask PublishAsync(
-              CPG.ArrayHashSet<MessageHandler<TMessage>> handlers
+              ZCPG.ArrayHashSet<MessageHandler<TMessage>> handlers
             , TMessage message
             , CancellationToken cancelToken
             , CappedArrayPool<UniTask> taskArrayPool
@@ -94,7 +94,7 @@ namespace ZBase.Foundation.PubSub.Internals
 
                 if (handlerMap.TryGetValue(order, out var handlers) == false)
                 {
-                    handlers = new CPG.ArrayHashSet<MessageHandler<TMessage>>();
+                    handlers = new ZCPG.ArrayHashSet<MessageHandler<TMessage>>();
                     handlerMap.Add(order, handlers);
                 }
 
