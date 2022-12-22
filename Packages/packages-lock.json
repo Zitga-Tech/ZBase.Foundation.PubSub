@@ -92,8 +92,8 @@
       "url": "https://package.openupm.com"
     },
     "com.zbase.foundation": {
-      "version": "1.0.0",
-      "depth": 0,
+      "version": "1.0.1",
+      "depth": 1,
       "source": "registry",
       "dependencies": {
         "com.cysharp.zstring": "2.5.0",
@@ -111,7 +111,7 @@
         "org.nuget.system.runtime.compilerservices.unsafe": "6.0.0",
         "com.cysharp.unitask": "2.3.3",
         "com.zbase.collections.pooled": "2.8.1",
-        "com.zbase.foundation": "1.0.0"
+        "com.zbase.foundation": "1.0.1"
       }
     },
     "org.nuget.system.runtime.compilerservices.unsafe": {
