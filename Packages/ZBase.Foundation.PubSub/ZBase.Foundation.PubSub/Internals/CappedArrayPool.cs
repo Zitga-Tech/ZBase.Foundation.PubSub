@@ -1,6 +1,7 @@
 ﻿// https://github.com/hadashiA/UniTaskPubSub/blob/master/Assets/UniTaskPubSub/Runtime/Internal/CappedArrayPool.cs
 
 using System;
+using UnityEngine;
 
 namespace ZBase.Foundation.PubSub.Internals
 {
@@ -8,12 +9,27 @@ namespace ZBase.Foundation.PubSub.Internals
     {
         internal const int INITIAL_BUCKET_SIZE = 4;
 
+        private static CappedArrayPool<T> s_shared8Limit;
+
         public static readonly T[] EmptyArray = new T[0];
-        public static readonly CappedArrayPool<T> Shared8Limit = new(8);
+
+        public static CappedArrayPool<T> Shared8Limit => s_shared8Limit;
 
         readonly T[][][] _buckets;
         readonly object _syncRoot = new();
         readonly int[] _tails;
+
+        static CappedArrayPool()
+        {
+            Init();
+        }
+
+        /// <seealso href="https://docs.unity3d.com/Manual/DomainReloading.html"/>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void Init()
+        {
+            s_shared8Limit = new(8);
+        }
 
         internal CappedArrayPool(int maxLength)
         {

@@ -1,10 +1,25 @@
-﻿using ZCPG = ZBase.Collections.Pooled.Generic;
+﻿using UnityEngine;
+using ZCPG = ZBase.Collections.Pooled.Generic;
 
 namespace ZBase.Foundation.PubSub
 {
     internal sealed class Subscription<TMessage> : ISubscription
     {
-        public static readonly Subscription<TMessage> None = new(default, default);
+        private static Subscription<TMessage> s_none;
+
+        public static Subscription<TMessage> None => s_none;
+
+        static Subscription()
+        {
+            Init();
+        }
+
+        /// <seealso href="https://docs.unity3d.com/Manual/DomainReloading.html"/>
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void Init()
+        {
+            s_none = new(default, default);
+        }
 
         private MessageHandler<TMessage> _handler;
         private ZCPG.ArrayHashSet<MessageHandler<TMessage>> _handlers;
