@@ -8,11 +8,10 @@ using ZCPG = ZBase.Collections.Pooled.Generic;
 
 namespace ZBase.Foundation.PubSub.Internals
 {
-    internal sealed class MessageBroker<TMessage>
-        : MessageBroker
+    internal sealed class MessageBroker<TMessage> : MessageBroker
     {
         private readonly ZCPG.List<int> _ordering = new(1);
-        private readonly Dictionary<int, ZCPG.ArrayHashSet<MessageHandler<TMessage>>> _handlerMap = new(1);
+        private readonly Dictionary<int, ZCPG.ArrayDictionary<HandlerId, IHandler<TMessage>>> _handlerMap = new(1);
 
         private CappedArrayPool<UniTask> _taskArrayPool;
 
@@ -49,21 +48,21 @@ namespace ZBase.Foundation.PubSub.Internals
         }
 
         private static async UniTask PublishAsync(
-              ZCPG.ArrayHashSet<MessageHandler<TMessage>> handlers
+              ZCPG.ArrayDictionary<HandlerId, IHandler<TMessage>> handlers
             , TMessage message
             , CancellationToken cancelToken
             , CappedArrayPool<UniTask> taskArrayPool
             , ILogger logger
         )
         {
-            handlers.GetUnsafe(out var handlerArray, out var count);
+            handlers.GetUnsafeValues(out var handlerArray, out var count);
             var tasks = taskArrayPool.Rent(count);
 
             try
             {
                 for (var i = 0; i < count; i++)
                 {
-                    tasks[i] = handlerArray[i].Key(message, cancelToken);
+                    tasks[i] = handlerArray[i].Handle(message, cancelToken);
                 }
 
                 await UniTask.WhenAll(tasks);
@@ -76,7 +75,7 @@ namespace ZBase.Foundation.PubSub.Internals
             taskArrayPool.Return(tasks);
         }
 
-        public Subscription<TMessage> Subscribe(MessageHandler<TMessage> handler, int order)
+        public Subscription<TMessage> Subscribe(IHandler<TMessage> handler, int order)
         {
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
@@ -94,12 +93,14 @@ namespace ZBase.Foundation.PubSub.Internals
 
                 if (handlerMap.TryGetValue(order, out var handlers) == false)
                 {
-                    handlers = new ZCPG.ArrayHashSet<MessageHandler<TMessage>>();
+                    handlers = new ZCPG.ArrayDictionary<HandlerId, IHandler<TMessage>>();
                     handlerMap.Add(order, handlers);
                 }
 
-                if (handlers.Add(handler) == true)
+                if (handlers.TryAdd(handler.Id, handler))
+                {
                     return new Subscription<TMessage>(handler, handlers);
+                }
 
                 return Subscription<TMessage>.None;
             }

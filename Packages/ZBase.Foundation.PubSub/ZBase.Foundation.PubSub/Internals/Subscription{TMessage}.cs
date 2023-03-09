@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using ZBase.Foundation.PubSub.Internals;
 using ZCPG = ZBase.Collections.Pooled.Generic;
 
 namespace ZBase.Foundation.PubSub
@@ -21,40 +23,33 @@ namespace ZBase.Foundation.PubSub
             s_none = new(default, default);
         }
 
-        private MessageHandler<TMessage> _handler;
-        private ZCPG.ArrayHashSet<MessageHandler<TMessage>> _handlers;
-
-        private bool _canDispose;
+        private IHandler<TMessage> _handler;
+        private readonly WeakReference<ZCPG.ArrayDictionary<HandlerId, IHandler<TMessage>>> _handlers;
 
         public Subscription(
-              MessageHandler<TMessage> handler
-            , ZCPG.ArrayHashSet<MessageHandler<TMessage>> handlers
+              IHandler<TMessage> handler
+            , ZCPG.ArrayDictionary<HandlerId, IHandler<TMessage>> handlers
         )
         {
             _handler = handler;
-            _handlers = handlers;
-
-            _canDispose = handler != null && handlers != null;
+            _handlers = new WeakReference<ZCPG.ArrayDictionary<HandlerId, IHandler<TMessage>>>(handlers);
         }
-
-        public bool IsValid => _canDispose;
 
         public void Dispose()
         {
-            if (_canDispose == false)
+            if (_handler == null)
             {
                 return;
             }
 
-            _canDispose = false;
-
-            if (_handler != null)
-            {
-                _handlers?.Remove(_handler);
-            }
-
+            var id = _handler.Id;
+            _handler.Dispose();
             _handler = null;
-            _handlers = null;
+
+            if (_handlers.TryGetTarget(out var handlers))
+            {
+                handlers.Remove(id);
+            }
         }
     }
 }

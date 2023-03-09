@@ -6,8 +6,7 @@ using Cysharp.Threading.Tasks;
 
 namespace ZBase.Foundation.PubSub.Internals
 {
-    internal sealed class MessageBroker<TScope, TMessage>
-        : MessageBroker
+    internal sealed class MessageBroker<TScope, TMessage> : MessageBroker
     {
         private readonly ArrayDictionary<TScope, MessageBroker<TMessage>> _scopedBrokers = new();
 
@@ -29,7 +28,7 @@ namespace ZBase.Foundation.PubSub.Internals
 
         public Subscription<TMessage> Subscribe(
               TScope scope
-            , MessageHandler<TMessage> handler
+            , IHandler<TMessage> handler
             , int order
             , CappedArrayPool<UniTask> taskArrayPool
         )

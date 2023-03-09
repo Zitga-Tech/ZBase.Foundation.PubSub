@@ -79,13 +79,11 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-                return Subscribe<TMessage>(
-                      (_, _) => {
-                          handler?.Invoke();
-                          return UniTask.CompletedTask;
-                      }
-                    , order
-                );
+                if (handler == null)
+                    throw new ArgumentNullException(nameof(handler));
+
+                TrySubscribe(new HandlerAction<TMessage>(handler), order, out var subscription);
+                return subscription;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -97,13 +95,11 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-                return Subscribe<TMessage>(
-                      (message, _) => {
-                          handler?.Invoke(message);
-                          return UniTask.CompletedTask;
-                      }
-                    , order
-                );
+                if (handler == null)
+                    throw new ArgumentNullException(nameof(handler));
+
+                TrySubscribe(new HandlerActionMessage<TMessage>(handler), order, out var subscription);
+                return subscription;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -115,10 +111,11 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-                return Subscribe<TMessage>(
-                      (_, _) => handler != null ? handler() : UniTask.CompletedTask
-                    , order
-                );
+                if (handler == null)
+                    throw new ArgumentNullException(nameof(handler));
+
+                TrySubscribe(new HandlerFunc<TMessage>(handler), order, out var subscription);
+                return subscription;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -130,10 +127,11 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-                return Subscribe<TMessage>(
-                      (message, _) => handler != null ? handler(message) : UniTask.CompletedTask
-                    , order
-                );
+                if (handler == null)
+                    throw new ArgumentNullException(nameof(handler));
+
+                TrySubscribe(new HandlerFuncMessage<TMessage>(handler), order, out var subscription);
+                return subscription;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -145,10 +143,11 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-                return Subscribe<TMessage>(
-                      (_, cancelToken) => handler != null ? handler(cancelToken) : UniTask.CompletedTask
-                    , order
-                );
+                if (handler == null)
+                    throw new ArgumentNullException(nameof(handler));
+
+                TrySubscribe(new HandlerFuncCancelToken<TMessage>(handler), order, out var subscription);
+                return subscription;
             }
 
             public ISubscription Subscribe<TMessage>(
@@ -162,7 +161,7 @@ namespace ZBase.Foundation.PubSub
                 if (handler == null)
                     throw new ArgumentNullException(nameof(handler));
 
-                TrySubscribe(handler, order, out var subscription);
+                TrySubscribe(new HandlerMessage<TMessage>(handler), order, out var subscription);
                 return subscription;
             }
 
@@ -176,11 +175,13 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-                Subscribe<TMessage>(
-                      (_, _) => { handler?.Invoke(); return UniTask.CompletedTask; }
-                    , unsubscribeToken
-                    , order
-                );
+                if (handler == null)
+                    throw new ArgumentNullException(nameof(handler));
+
+                if (TrySubscribe(new HandlerAction<TMessage>(handler), order, out var subscription))
+                {
+                    RegisterUnsubscription(subscription, unsubscribeToken);
+                }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -193,11 +194,13 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-                Subscribe<TMessage>(
-                      (message, _) => { handler?.Invoke(message); return UniTask.CompletedTask; }
-                    , unsubscribeToken
-                    , order
-                );
+                if (handler == null)
+                    throw new ArgumentNullException(nameof(handler));
+
+                if (TrySubscribe(new HandlerActionMessage<TMessage>(handler), order, out var subscription))
+                {
+                    RegisterUnsubscription(subscription, unsubscribeToken);
+                }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -210,11 +213,13 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-                Subscribe<TMessage>(
-                      (_, _) => handler != null ? handler() : UniTask.CompletedTask
-                    , unsubscribeToken
-                    , order
-                );
+                if (handler == null)
+                    throw new ArgumentNullException(nameof(handler));
+
+                if (TrySubscribe(new HandlerFunc<TMessage>(handler), order, out var subscription))
+                {
+                    RegisterUnsubscription(subscription, unsubscribeToken);
+                }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -227,11 +232,13 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-                Subscribe<TMessage>(
-                      (message, _) => handler != null ? handler(message) : UniTask.CompletedTask
-                    , unsubscribeToken
-                    , order
-                );
+                if (handler == null)
+                    throw new ArgumentNullException(nameof(handler));
+
+                if (TrySubscribe(new HandlerFuncMessage<TMessage>(handler), order, out var subscription))
+                {
+                    RegisterUnsubscription(subscription, unsubscribeToken);
+                }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -244,13 +251,16 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-                Subscribe<TMessage>(
-                      (_, cancelToken) => handler != null ? handler(cancelToken) : UniTask.CompletedTask
-                    , unsubscribeToken
-                    , order
-                );
+                if (handler == null)
+                    throw new ArgumentNullException(nameof(handler));
+
+                if (TrySubscribe(new HandlerFuncCancelToken<TMessage>(handler), order, out var subscription))
+                {
+                    RegisterUnsubscription(subscription, unsubscribeToken);
+                }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Subscribe<TMessage>(
                   MessageHandler<TMessage> handler
                 , in CancellationToken unsubscribeToken
@@ -263,14 +273,24 @@ namespace ZBase.Foundation.PubSub
                 if (handler == null)
                     throw new ArgumentNullException(nameof(handler));
 
-                if (TrySubscribe(handler, order, out var subscription))
+                if (TrySubscribe(new HandlerMessage<TMessage>(handler), order, out var subscription))
                 {
-                    unsubscribeToken.Register(x => ((Subscription<TMessage>)x)?.Dispose(), subscription);
+                    RegisterUnsubscription(subscription, unsubscribeToken);
                 }
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private static void RegisterUnsubscription<TMessage>(
+                  Subscription<TMessage> subscription
+                , CancellationToken unsubscribeToken
+            )
+                where TMessage : IMessage
+            {
+                unsubscribeToken.Register(x => ((Subscription<TMessage>)x)?.Dispose(), subscription);
+            }
+
             private bool TrySubscribe<TMessage>(
-                  MessageHandler<TMessage> handler
+                  IHandler<TMessage> handler
                 , int order
                 , out Subscription<TMessage> subscription
             )
@@ -301,7 +321,7 @@ namespace ZBase.Foundation.PubSub
                     }
 
                     subscription = broker.Subscribe(Scope, handler, order, taskArrayPool);
-                    return subscription.IsValid;
+                    return true;
                 }
             }
 
