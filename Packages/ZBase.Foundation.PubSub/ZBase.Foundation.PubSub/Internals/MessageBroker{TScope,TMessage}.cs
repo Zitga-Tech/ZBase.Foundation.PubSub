@@ -60,6 +60,35 @@ namespace ZBase.Foundation.PubSub.Internals
             _scopedBrokers.Dispose();
         }
 
+        public override void Compress()
+        {
+            var scopedBrokers = _scopedBrokers;
+            scopedBrokers.GetUnsafe(out var keys, out var values, out var count);
+
+            var scopesToRemove = ValueList<TScope>.Create(count);
+
+            for (var i = count - 1; i >= 0; i--)
+            {
+                var broker = values[i];
+                broker.Compress();
+
+                if (broker.IsEmpty)
+                {
+                    broker.Dispose();
+                    scopesToRemove.Add(keys[i].Key);
+                }
+            }
+
+            scopesToRemove.GetUnsafe(out var scopes, out count);
+
+            for (var i = count - 1; i >= 0; i--)
+            {
+                _scopedBrokers.Remove(scopes[i]);
+            }
+
+            scopesToRemove.Dispose();
+        }
+
         /// <summary>
         /// Remove empty handler groups to optimize performance.
         /// </summary>

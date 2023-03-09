@@ -122,7 +122,7 @@ namespace ZBase.Foundation.PubSub.Internals
         /// <summary>
         /// Remove empty handler groups to optimize performance.
         /// </summary>
-        public void Compress()
+        public override void Compress()
         {
             var handlerMap = _handlerMap;
             var ordering = _ordering;
