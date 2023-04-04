@@ -25,9 +25,13 @@ namespace ZBase.Foundation.PubSub.Internals
 
         public async UniTask PublishAsync(TMessage message, CancellationToken cancelToken, ILogger logger)
         {
-            _ordering.GetUnsafe(out var orderArray, out var orderCount);
-
             var handlerMap = _handlerMap;
+
+            _ordering.GetUnsafe(out var orderArray, out var orderCount);
+            
+            var orderValueArray = ZCPG.ValueArray<int>.Create(orderCount);
+            orderArray.AsSpan(0, orderCount).CopyTo(orderValueArray.AsSpan(0, orderCount));
+            orderValueArray.GetUnsafe(out orderArray, out orderCount);
 
             for (var i = orderCount - 1; i >= 0; i--)
             {
@@ -45,6 +49,8 @@ namespace ZBase.Foundation.PubSub.Internals
 
                 await PublishAsync(handlers, message, cancelToken, TaskArrayPool, logger);
             }
+
+            orderValueArray.Dispose();
         }
 
         private static async UniTask PublishAsync(
@@ -56,6 +62,11 @@ namespace ZBase.Foundation.PubSub.Internals
         )
         {
             handlers.GetUnsafeValues(out var handlerArray, out var count);
+
+            var handlerValueArray = ZCPG.ValueArray<IHandler<TMessage>>.Create(count);
+            handlerArray.AsSpan(0, count).CopyTo(handlerValueArray.AsSpan(0, count));
+            handlerValueArray.GetUnsafe(out handlerArray, out count);
+
             var tasks = taskArrayPool.Rent(count);
 
             try
@@ -73,6 +84,7 @@ namespace ZBase.Foundation.PubSub.Internals
             }
 
             taskArrayPool.Return(tasks);
+            handlerValueArray.Dispose();
         }
 
         public Subscription<TMessage> Subscribe(IHandler<TMessage> handler, int order)
@@ -131,6 +143,10 @@ namespace ZBase.Foundation.PubSub.Internals
             {
                 ordering.GetUnsafe(out var orderArray, out var orderCount);
 
+                var orderValueArray = ZCPG.ValueArray<int>.Create(orderCount);
+                orderArray.AsSpan(0, orderCount).CopyTo(orderValueArray.AsSpan(0, orderCount));
+                orderValueArray.GetUnsafe(out orderArray, out orderCount);
+
                 for (var i = orderCount - 1; i >= 0; i--)
                 {
                     var order = orderArray[i];
@@ -148,6 +164,8 @@ namespace ZBase.Foundation.PubSub.Internals
                     handlerMap.Remove(order);
                     ordering.RemoveAt(i);
                 }
+
+                orderValueArray.Dispose();
             }
         }
     }
