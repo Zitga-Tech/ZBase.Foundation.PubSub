@@ -33,24 +33,33 @@ namespace ZBase.Foundation.PubSub.Internals
             orderArray.AsSpan(0, orderCount).CopyTo(orderValueArray.AsSpan(0, orderCount));
             orderValueArray.GetUnsafe(out orderArray, out orderCount);
 
-            for (var i = orderCount - 1; i >= 0; i--)
+            try
             {
-                var order = orderArray[i];
-
-                if (handlerMap.TryGetValue(order, out var handlers) == false)
+                for (var i = orderCount - 1; i >= 0; i--)
                 {
-                    continue;
-                }
+                    var order = orderArray[i];
 
-                if (handlers.Count < 1)
-                {
-                    continue;
-                }
+                    if (handlerMap.TryGetValue(order, out var handlers) == false)
+                    {
+                        continue;
+                    }
 
-                await PublishAsync(handlers, message, cancelToken, TaskArrayPool, logger);
+                    if (handlers.Count < 1)
+                    {
+                        continue;
+                    }
+
+                    await PublishAsync(handlers, message, cancelToken, TaskArrayPool, logger);
+                }
             }
-
-            orderValueArray.Dispose();
+            catch (Exception ex)
+            {
+                logger?.LogException(ex);
+            }
+            finally
+            {
+                orderValueArray.Dispose();
+            }
         }
 
         private static async UniTask PublishAsync(
@@ -82,9 +91,11 @@ namespace ZBase.Foundation.PubSub.Internals
             {
                 logger?.LogException(ex);
             }
-
-            taskArrayPool.Return(tasks);
-            handlerValueArray.Dispose();
+            finally
+            {
+                taskArrayPool.Return(tasks);
+                handlerValueArray.Dispose();
+            }
         }
 
         public Subscription<TMessage> Subscribe(IHandler<TMessage> handler, int order)
@@ -147,25 +158,30 @@ namespace ZBase.Foundation.PubSub.Internals
                 orderArray.AsSpan(0, orderCount).CopyTo(orderValueArray.AsSpan(0, orderCount));
                 orderValueArray.GetUnsafe(out orderArray, out orderCount);
 
-                for (var i = orderCount - 1; i >= 0; i--)
+                try
                 {
-                    var order = orderArray[i];
-
-                    if (handlerMap.TryGetValue(order, out var handlers) == false)
+                    for (var i = orderCount - 1; i >= 0; i--)
                     {
-                        continue;
-                    }
+                        var order = orderArray[i];
 
-                    if (handlers.Count > 0)
-                    {
-                        continue;
-                    }
+                        if (handlerMap.TryGetValue(order, out var handlers) == false)
+                        {
+                            continue;
+                        }
 
-                    handlerMap.Remove(order);
-                    ordering.RemoveAt(i);
+                        if (handlers.Count > 0)
+                        {
+                            continue;
+                        }
+
+                        handlerMap.Remove(order);
+                        ordering.RemoveAt(i);
+                    }
                 }
-
-                orderValueArray.Dispose();
+                finally
+                {
+                    orderValueArray.Dispose();
+                }
             }
         }
     }

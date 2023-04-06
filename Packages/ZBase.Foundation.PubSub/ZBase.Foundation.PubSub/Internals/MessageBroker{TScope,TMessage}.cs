@@ -67,26 +67,31 @@ namespace ZBase.Foundation.PubSub.Internals
 
             var scopesToRemove = ValueList<TScope>.Create(count);
 
-            for (var i = count - 1; i >= 0; i--)
+            try
             {
-                var broker = values[i];
-                broker.Compress();
-
-                if (broker.IsEmpty)
+                for (var i = count - 1; i >= 0; i--)
                 {
-                    broker.Dispose();
-                    scopesToRemove.Add(keys[i].Key);
+                    var broker = values[i];
+                    broker.Compress();
+
+                    if (broker.IsEmpty)
+                    {
+                        broker.Dispose();
+                        scopesToRemove.Add(keys[i].Key);
+                    }
+                }
+
+                scopesToRemove.GetUnsafe(out var scopes, out count);
+
+                for (var i = count - 1; i >= 0; i--)
+                {
+                    _scopedBrokers.Remove(scopes[i]);
                 }
             }
-
-            scopesToRemove.GetUnsafe(out var scopes, out count);
-
-            for (var i = count - 1; i >= 0; i--)
+            finally
             {
-                _scopedBrokers.Remove(scopes[i]);
+                scopesToRemove.Dispose();
             }
-
-            scopesToRemove.Dispose();
         }
 
         /// <summary>
