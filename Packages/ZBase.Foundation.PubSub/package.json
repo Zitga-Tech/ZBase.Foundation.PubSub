@@ -8,7 +8,7 @@
     "org.nuget.system.runtime.compilerservices.unsafe": "6.0.0",
     "com.cysharp.unitask": "2.3.3",
     "com.zbase.collections.pooled": "2.8.1",
-    "com.zbase.foundation": "1.0.1"
+    "com.zbase.foundation": "1.0.5"
   },
   "samples": [
     {

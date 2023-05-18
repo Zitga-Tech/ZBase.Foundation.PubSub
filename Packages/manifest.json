@@ -1,7 +1,6 @@
 {
   "dependencies": {
     "com.cysharp.unitask": "2.3.3",
-    "com.cysharp.zstring": "2.5.0",
     "com.unity.ide.rider": "3.0.17",
     "com.unity.ide.visualstudio": "2.0.17",
     "com.unity.ide.vscode": "1.2.5",
@@ -9,7 +8,7 @@
     "com.unity.textmeshpro": "3.0.6",
     "com.unity.ugui": "1.0.0",
     "com.zbase.collections.pooled": "2.8.1",
-    "com.zbase.foundation": "1.0.0",
+    "com.zbase.foundation": "1.0.5",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.androidjni": "1.0.0",
     "com.unity.modules.animation": "1.0.0",
