@@ -284,7 +284,9 @@ namespace ZBase.Foundation.PubSub
                   Subscription<TMessage> subscription
                 , CancellationToken unsubscribeToken
             )
+#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
                 where TMessage : IMessage
+#endif
             {
                 unsubscribeToken.Register(x => ((Subscription<TMessage>)x)?.Dispose(), subscription);
             }
