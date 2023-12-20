@@ -67,7 +67,9 @@ namespace ZBase.Foundation.PubSub.Internals
 
             var scopesToRemove = ValueList<TScope>.Create(count);
 
+#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             try
+#endif
             {
                 for (var i = count - 1; i >= 0; i--)
                 {
@@ -88,7 +90,9 @@ namespace ZBase.Foundation.PubSub.Internals
                     _scopedBrokers.Remove(scopes[i]);
                 }
             }
+#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             finally
+#endif
             {
                 scopesToRemove.Dispose();
             }

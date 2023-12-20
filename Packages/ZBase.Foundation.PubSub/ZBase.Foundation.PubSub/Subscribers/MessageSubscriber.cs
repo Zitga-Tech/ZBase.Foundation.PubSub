@@ -300,7 +300,7 @@ namespace ZBase.Foundation.PubSub
 #if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
                 if (Validate() == false)
                 {
-                    subscription = default;
+                    subscription = Subscription<TMessage>.None;
                     return false;
                 }
 #endif
@@ -317,7 +317,7 @@ namespace ZBase.Foundation.PubSub
                         if (brokers.TryAdd(broker) == false)
                         {
                             broker?.Dispose();
-                            subscription = default;
+                            subscription = Subscription<TMessage>.None;
                             return false;
                         }
                     }

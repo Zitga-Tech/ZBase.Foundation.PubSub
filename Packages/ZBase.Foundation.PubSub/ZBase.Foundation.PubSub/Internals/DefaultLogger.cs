@@ -8,6 +8,8 @@ namespace ZBase.Foundation.PubSub.Internals
 {
     internal class DefaultLogger : ILogger
     {
+        public static readonly DefaultLogger Default = new();
+
 #if __ZBASE_FOUNDATION_PUBSUB_NO_LOGGING__
 
         public void LogException(Exception exception) { }

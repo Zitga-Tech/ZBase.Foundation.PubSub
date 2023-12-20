@@ -1,4 +1,8 @@
-﻿using System;
+﻿#if !(UNITY_EDITOR || DEBUG) || DISABLE_ZBASE_PUBSUB_DEBUG
+#define __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#endif
+
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -33,7 +37,9 @@ namespace ZBase.Foundation.PubSub.Internals
             orderArray.AsSpan(0, orderCount).CopyTo(orderValueArray.AsSpan(0, orderCount));
             orderValueArray.GetUnsafe(out orderArray, out orderCount);
 
+#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             try
+#endif
             {
                 for (var i = orderCount - 1; i >= 0; i--)
                 {
@@ -52,6 +58,7 @@ namespace ZBase.Foundation.PubSub.Internals
                     await PublishAsync(handlers, message, cancelToken, TaskArrayPool, logger);
                 }
             }
+#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             catch (Exception ex)
             {
                 logger?.LogException(ex);
@@ -60,6 +67,7 @@ namespace ZBase.Foundation.PubSub.Internals
             {
                 orderValueArray.Dispose();
             }
+#endif
         }
 
         private static async UniTask PublishAsync(
@@ -78,7 +86,9 @@ namespace ZBase.Foundation.PubSub.Internals
 
             var tasks = taskArrayPool.Rent(count);
 
+#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             try
+#endif
             {
                 for (var i = 0; i < count; i++)
                 {
@@ -87,6 +97,7 @@ namespace ZBase.Foundation.PubSub.Internals
 
                 await UniTask.WhenAll(tasks);
             }
+#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             catch (Exception ex)
             {
                 logger?.LogException(ex);
@@ -96,12 +107,15 @@ namespace ZBase.Foundation.PubSub.Internals
                 taskArrayPool.Return(tasks);
                 handlerValueArray.Dispose();
             }
+#endif
         }
 
         public Subscription<TMessage> Subscribe(IHandler<TMessage> handler, int order)
         {
+#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
+#endif
 
             var ordering = _ordering;
             var handlerMap = _handlerMap;
@@ -129,7 +143,7 @@ namespace ZBase.Foundation.PubSub.Internals
             }
         }
 
-        public override void Dispose()
+        public sealed override void Dispose()
         {
             var handlerMap = _handlerMap;
 
@@ -145,7 +159,7 @@ namespace ZBase.Foundation.PubSub.Internals
         /// <summary>
         /// Remove empty handler groups to optimize performance.
         /// </summary>
-        public override void Compress()
+        public sealed override void Compress()
         {
             var handlerMap = _handlerMap;
             var ordering = _ordering;
@@ -158,7 +172,9 @@ namespace ZBase.Foundation.PubSub.Internals
                 orderArray.AsSpan(0, orderCount).CopyTo(orderValueArray.AsSpan(0, orderCount));
                 orderValueArray.GetUnsafe(out orderArray, out orderCount);
 
+#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
                 try
+#endif
                 {
                     for (var i = orderCount - 1; i >= 0; i--)
                     {
@@ -178,7 +194,9 @@ namespace ZBase.Foundation.PubSub.Internals
                         ordering.RemoveAt(i);
                     }
                 }
+#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
                 finally
+#endif
                 {
                     orderValueArray.Dispose();
                 }

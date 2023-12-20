@@ -12,8 +12,6 @@ namespace ZBase.Foundation.PubSub
 {
     public partial class MessagePublisher
     {
-        private static readonly DefaultLogger s_defaultLogger = new();
-
         private readonly SingletonContainer<MessageBroker> _brokers;
 
         internal MessagePublisher(SingletonContainer<MessageBroker> brokers)
@@ -58,7 +56,7 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage, new()
 #endif
             {
-                Publish<TMessage>(new(), cancelToken);
+                Publish<TMessage>(new(), cancelToken, logger);
             }
 
             public void Publish<TMessage>(
@@ -80,20 +78,20 @@ namespace ZBase.Foundation.PubSub
 #if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
                 if (Scope == null)
                 {
-                    (logger ?? s_defaultLogger).LogException(new System.NullReferenceException(nameof(Scope)));
+                    (logger ?? DefaultLogger.Default).LogException(new System.NullReferenceException(nameof(Scope)));
                     return;
                 }
 
                 if (message == null)
                 {
-                    (logger ?? s_defaultLogger).LogException(new System.ArgumentNullException(nameof(message)));
+                    (logger ?? DefaultLogger.Default).LogException(new System.ArgumentNullException(nameof(message)));
                     return;
                 }
 #endif
 
                 if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
                 {
-                    broker.PublishAsync(Scope, message, cancelToken, logger ?? s_defaultLogger).Forget();
+                    broker.PublishAsync(Scope, message, cancelToken, logger ?? DefaultLogger.Default).Forget();
                 }
 #if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
                 else
@@ -136,20 +134,20 @@ namespace ZBase.Foundation.PubSub
 #if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
                 if (Scope == null)
                 {
-                    (logger ?? s_defaultLogger).LogException(new System.NullReferenceException(nameof(Scope)));
+                    (logger ?? DefaultLogger.Default).LogException(new System.NullReferenceException(nameof(Scope)));
                     return UniTask.CompletedTask;
                 }
 
                 if (message == null)
                 {
-                    (logger ?? s_defaultLogger).LogException(new System.ArgumentNullException(nameof(message)));
+                    (logger ?? DefaultLogger.Default).LogException(new System.ArgumentNullException(nameof(message)));
                     return UniTask.CompletedTask;
                 }
 #endif
 
                 if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
                 {
-                    return broker.PublishAsync(Scope, message, cancelToken, logger ?? s_defaultLogger);
+                    return broker.PublishAsync(Scope, message, cancelToken, logger ?? DefaultLogger.Default);
                 }
 
 #if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -181,7 +179,7 @@ namespace ZBase.Foundation.PubSub
 #if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             private static void LogWarning<TMessage>(TScope scope, ILogger logger)
             {
-                (logger ?? s_defaultLogger).LogWarning(
+                (logger ?? DefaultLogger.Default).LogWarning(
                     $"Found no subscription for `{typeof(TMessage).Name}` in scope `{scope}`"
                 );
             }
