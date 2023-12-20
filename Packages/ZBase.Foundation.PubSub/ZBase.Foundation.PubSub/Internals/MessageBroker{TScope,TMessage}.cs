@@ -52,6 +52,22 @@ namespace ZBase.Foundation.PubSub.Internals
             }
         }
 
+        public MessageBroker<TMessage> Cache(TScope scope, CappedArrayPool<UniTask> taskArrayPool)
+        {
+            var scopedBrokers = _scopedBrokers;
+
+            lock (scopedBrokers)
+            {
+                if (scopedBrokers.TryGetValue(scope, out var broker) == false)
+                {
+                    scopedBrokers[scope] = broker = new MessageBroker<TMessage>();
+                    broker.TaskArrayPool = taskArrayPool;
+                }
+
+                return broker;
+            }
+        }
+
         public override void Dispose()
         {
             var scopedBrokers = _scopedBrokers;

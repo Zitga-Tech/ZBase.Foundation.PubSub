@@ -16,10 +16,13 @@ namespace ZBase.Foundation.PubSub
         private readonly SingletonContainer<MessageBroker> _brokers;
         private readonly CappedArrayPool<UniTask> _taskArrayPool;
 
-        internal MessageSubscriber(SingletonContainer<MessageBroker> brokers)
+        internal MessageSubscriber(
+              SingletonContainer<MessageBroker> brokers
+            , CappedArrayPool<UniTask> taskArrayPool
+        )
         {
             _brokers = brokers;
-            _taskArrayPool = new(8);
+            _taskArrayPool = taskArrayPool;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

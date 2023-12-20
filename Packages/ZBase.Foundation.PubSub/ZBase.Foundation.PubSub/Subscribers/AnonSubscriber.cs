@@ -18,9 +18,12 @@ namespace ZBase.Foundation.PubSub
     {
         private readonly MessageSubscriber _subscriber;
 
-        internal AnonSubscriber(SingletonContainer<MessageBroker> brokers)
+        internal AnonSubscriber(
+              SingletonContainer<MessageBroker> brokers
+            , CappedArrayPool<UniTask> taskArrayPool
+        )
         {
-            _subscriber = new(brokers);
+            _subscriber = new(brokers, taskArrayPool);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

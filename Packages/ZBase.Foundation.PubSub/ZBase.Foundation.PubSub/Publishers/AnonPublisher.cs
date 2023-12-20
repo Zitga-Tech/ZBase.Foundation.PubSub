@@ -17,9 +17,12 @@ namespace ZBase.Foundation.PubSub
     {
         private readonly MessagePublisher _publisher;
 
-        internal AnonPublisher(SingletonContainer<MessageBroker> brokers)
+        internal AnonPublisher(
+              SingletonContainer<MessageBroker> brokers
+            , CappedArrayPool<UniTask> taskArrayPool
+        )
         {
-            _publisher = new(brokers);
+            _publisher = new(brokers, taskArrayPool);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -32,6 +35,12 @@ namespace ZBase.Foundation.PubSub
         public Publisher<TScope> Scope<TScope>(TScope scope)
         {
             return new(_publisher.Scope(scope));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public CachedPublisher<AnonMessage> Cache<TScope>(TScope scope, ILogger logger = null)
+        {
+            return _publisher.Cache<TScope, AnonMessage>(scope, logger);
         }
 
         /// <summary>
