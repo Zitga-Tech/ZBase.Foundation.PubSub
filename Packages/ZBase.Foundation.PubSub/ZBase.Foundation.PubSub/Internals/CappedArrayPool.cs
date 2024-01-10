@@ -1,6 +1,7 @@
 ﻿// https://github.com/hadashiA/UniTaskPubSub/blob/master/Assets/UniTaskPubSub/Runtime/Internal/CappedArrayPool.cs
 
 using System;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace ZBase.Foundation.PubSub.Internals
@@ -9,15 +10,16 @@ namespace ZBase.Foundation.PubSub.Internals
     {
         internal const int INITIAL_BUCKET_SIZE = 4;
 
-        private static CappedArrayPool<T> s_shared8Limit;
-
         public static readonly T[] EmptyArray = new T[0];
 
         public static CappedArrayPool<T> Shared8Limit => s_shared8Limit;
 
-        readonly T[][][] _buckets;
-        readonly object _syncRoot = new();
-        readonly int[] _tails;
+        private readonly static bool s_isTUnmanaged = RuntimeHelpers.IsReferenceOrContainsReferences<T>();
+        private static CappedArrayPool<T> s_shared8Limit;
+
+        private readonly T[][][] _buckets;
+        private readonly object _syncRoot = new();
+        private readonly int[] _tails;
 
         static CappedArrayPool()
         {
@@ -84,6 +86,9 @@ namespace ZBase.Foundation.PubSub.Internals
             var i = array.Length - 1;
             lock (_syncRoot)
             {
+                if (s_isTUnmanaged == false)
+                    Array.Clear(array, 0, array.Length);
+
                 if (_tails[i] > 0)
                     _tails[i] -= 1;
             }
