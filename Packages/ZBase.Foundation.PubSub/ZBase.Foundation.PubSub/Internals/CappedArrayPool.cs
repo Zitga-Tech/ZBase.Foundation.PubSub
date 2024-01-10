@@ -14,7 +14,7 @@ namespace ZBase.Foundation.PubSub.Internals
 
         public static CappedArrayPool<T> Shared8Limit => s_shared8Limit;
 
-        private readonly static bool s_isTUnmanaged = RuntimeHelpers.IsReferenceOrContainsReferences<T>();
+        private readonly static bool s_isTManaged = RuntimeHelpers.IsReferenceOrContainsReferences<T>();
         private static CappedArrayPool<T> s_shared8Limit;
 
         private readonly T[][][] _buckets;
@@ -86,7 +86,7 @@ namespace ZBase.Foundation.PubSub.Internals
             var i = array.Length - 1;
             lock (_syncRoot)
             {
-                if (s_isTUnmanaged == false)
+                if (s_isTManaged)
                     Array.Clear(array, 0, array.Length);
 
                 if (_tails[i] > 0)
