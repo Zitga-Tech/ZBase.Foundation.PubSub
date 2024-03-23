@@ -19,6 +19,7 @@ namespace ZBase.Foundation.PubSub.Internals
         private readonly Dictionary<int, ZCPG.ArrayDictionary<HandlerId, IHandler<TMessage>>> _handlerMap = new(1);
 
         private CappedArrayPool<UniTask> _taskArrayPool;
+        private int _cachedRefs;
 
         public CappedArrayPool<UniTask> TaskArrayPool
         {
@@ -27,6 +28,8 @@ namespace ZBase.Foundation.PubSub.Internals
         }
 
         public bool IsEmpty => _ordering.Count < 1;
+
+        public bool IsCached => _cachedRefs > 0;
 
         public async UniTask PublishAsync(TMessage message, CancellationToken cancelToken, ILogger logger)
         {
@@ -238,6 +241,16 @@ namespace ZBase.Foundation.PubSub.Internals
                 handlerMap.Clear();
                 ordering.Dispose();
             }
+        }
+
+        public void OnCache()
+        {
+            _cachedRefs++;
+        }
+
+        public void OnUncache()
+        {
+            _cachedRefs--;
         }
 
         /// <summary>

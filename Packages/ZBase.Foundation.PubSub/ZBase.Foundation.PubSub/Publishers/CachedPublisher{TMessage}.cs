@@ -2,6 +2,7 @@
 #define __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
 #endif
 
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -9,28 +10,36 @@ using ZBase.Foundation.PubSub.Internals;
 
 namespace ZBase.Foundation.PubSub
 {
-    public readonly struct CachedPublisher<TMessage>
+    public struct CachedPublisher<TMessage> : IDisposable
 #if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
         where TMessage : new()
 #else
         where TMessage : IMessage, new()
 #endif
     {
-        private readonly MessageBroker<TMessage> _broker;
+        private MessageBroker<TMessage> _broker;
 
         internal CachedPublisher(MessageBroker<TMessage> broker)
         {
             _broker = broker ?? throw new System.ArgumentNullException(nameof(broker));
         }
 
+        public readonly bool IsValid => _broker != null;
+
+        public void Dispose()
+        {
+            _broker?.OnUncache();
+            _broker = null;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Publish(CancellationToken cancelToken = default, ILogger logger = null)
+        public readonly void Publish(CancellationToken cancelToken = default, ILogger logger = null)
         {
             Publish(new TMessage(), cancelToken, logger);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Publish(
+        public readonly void Publish(
               TMessage message
             , CancellationToken cancelToken = default
             , ILogger logger = null
@@ -53,13 +62,13 @@ namespace ZBase.Foundation.PubSub
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public UniTask PublishAsync(CancellationToken cancelToken = default, ILogger logger = null)
+        public readonly UniTask PublishAsync(CancellationToken cancelToken = default, ILogger logger = null)
         {
             return PublishAsync(new TMessage(), cancelToken, logger);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public UniTask PublishAsync(
+        public readonly UniTask PublishAsync(
               TMessage message
             , CancellationToken cancelToken = default
             , ILogger logger = null
@@ -82,7 +91,7 @@ namespace ZBase.Foundation.PubSub
         }
 
 #if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-        private bool Validate()
+        private readonly bool Validate()
         {
             if (_broker != null)
             {

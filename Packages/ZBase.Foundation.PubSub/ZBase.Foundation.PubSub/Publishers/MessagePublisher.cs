@@ -36,6 +36,17 @@ namespace ZBase.Foundation.PubSub
             return new(this, scope);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public CachedPublisher<TMessage> Cache<TMessage>(ILogger logger = null)
+#if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+            where TMessage : new()
+#else
+            where TMessage : IMessage, new()
+#endif
+        {
+            return Cache<GlobalScope, TMessage>(default, logger);
+        }
+
         public CachedPublisher<TMessage> Cache<TScope, TMessage>(TScope scope, ILogger logger = null)
 #if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
             where TMessage : new()

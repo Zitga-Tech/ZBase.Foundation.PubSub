@@ -64,6 +64,7 @@ namespace ZBase.Foundation.PubSub.Internals
                     broker.TaskArrayPool = taskArrayPool;
                 }
 
+                broker.OnCache();
                 return broker;
             }
         }
@@ -138,6 +139,11 @@ namespace ZBase.Foundation.PubSub.Internals
             lock (scopedBrokers)
             {
                 if (scopedBrokers.TryGetValue(scope, out var broker) == false)
+                {
+                    return;
+                }
+
+                if (broker.IsCached)
                 {
                     return;
                 }
