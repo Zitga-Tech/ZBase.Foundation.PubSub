@@ -288,7 +288,7 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-                unsubscribeToken.Register(x => ((Subscription<TMessage>)x)?.Dispose(), subscription);
+                unsubscribeToken.Register(static x => ((Subscription<TMessage>)x)?.Dispose(), subscription);
             }
 
             private bool TrySubscribe<TMessage>(

@@ -8,26 +8,28 @@ namespace ZBase.Foundation.PubSub.Internals
     {
         HandlerId Id { get; }
 
-        UniTask Handle(TMessage message, in CancellationToken cancelToken);
+        UniTask Handle(TMessage message, CancellationToken cancelToken);
     }
 
     internal sealed class HandlerMessage<TMessage> : IHandler<TMessage>
     {
+        private readonly HandlerId _id;
         private MessageHandler<TMessage> _handler;
 
         public HandlerMessage(MessageHandler<TMessage> handler)
         {
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+            _id = new(handler);
         }
 
-        public HandlerId Id => new(_handler);
+        public HandlerId Id => _id;
 
         public void Dispose()
         {
             _handler = null;
         }
 
-        public UniTask Handle(TMessage message, in CancellationToken cancelToken)
+        public UniTask Handle(TMessage message, CancellationToken cancelToken)
         {
             return _handler?.Invoke(message, cancelToken) ?? UniTask.CompletedTask;
         }
@@ -35,21 +37,23 @@ namespace ZBase.Foundation.PubSub.Internals
 
     internal sealed class HandlerFuncCancelToken<TMessage> : IHandler<TMessage>
     {
+        private readonly HandlerId _id;
         private Func<CancellationToken, UniTask> _handler;
 
         public HandlerFuncCancelToken(Func<CancellationToken, UniTask> handler)
         {
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+            _id = new(handler);
         }
 
-        public HandlerId Id => new(_handler);
+        public HandlerId Id => _id;
 
         public void Dispose()
         {
             _handler = null;
         }
 
-        public UniTask Handle(TMessage message, in CancellationToken cancelToken)
+        public UniTask Handle(TMessage message, CancellationToken cancelToken)
         {
             return _handler?.Invoke(cancelToken) ?? UniTask.CompletedTask;
         }
@@ -57,21 +61,23 @@ namespace ZBase.Foundation.PubSub.Internals
 
     internal sealed class HandlerFuncMessage<TMessage> : IHandler<TMessage>
     {
+        private readonly HandlerId _id;
         private Func<TMessage, UniTask> _handler;
 
         public HandlerFuncMessage(Func<TMessage, UniTask> handler)
         {
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+            _id = new(handler);
         }
 
-        public HandlerId Id => new(_handler);
+        public HandlerId Id => _id;
 
         public void Dispose()
         {
             _handler = null;
         }
 
-        public UniTask Handle(TMessage message, in CancellationToken cancelToken)
+        public UniTask Handle(TMessage message, CancellationToken cancelToken)
         {
             return _handler?.Invoke(message) ?? UniTask.CompletedTask;
         }
@@ -79,21 +85,23 @@ namespace ZBase.Foundation.PubSub.Internals
 
     internal sealed class HandlerFunc<TMessage> : IHandler<TMessage>
     {
+        private readonly HandlerId _id;
         private Func<UniTask> _handler;
 
         public HandlerFunc(Func<UniTask> handler)
         {
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+            _id = new(handler);
         }
 
-        public HandlerId Id => new(_handler);
+        public HandlerId Id => _id;
 
         public void Dispose()
         {
             _handler = null;
         }
 
-        public UniTask Handle(TMessage message, in CancellationToken cancelToken)
+        public UniTask Handle(TMessage message, CancellationToken cancelToken)
         {
             return _handler?.Invoke() ?? UniTask.CompletedTask;
         }
@@ -101,21 +109,23 @@ namespace ZBase.Foundation.PubSub.Internals
 
     internal sealed class HandlerActionMessage<TMessage> : IHandler<TMessage>
     {
+        private readonly HandlerId _id;
         private Action<TMessage> _handler;
 
         public HandlerActionMessage(Action<TMessage> handler)
         {
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+            _id = new(handler);
         }
 
-        public HandlerId Id => new(_handler);
+        public HandlerId Id => _id;
 
         public void Dispose()
         {
             _handler = null;
         }
 
-        public UniTask Handle(TMessage message, in CancellationToken cancelToken)
+        public UniTask Handle(TMessage message, CancellationToken cancelToken)
         {
             _handler?.Invoke(message);
             return UniTask.CompletedTask;
@@ -124,21 +134,23 @@ namespace ZBase.Foundation.PubSub.Internals
 
     internal sealed class HandlerAction<TMessage> : IHandler<TMessage>
     {
+        private readonly HandlerId _id;
         private Action _handler;
 
         public HandlerAction(Action handler)
         {
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+            _id = new(handler);
         }
 
-        public HandlerId Id => new(_handler);
+        public HandlerId Id => _id;
 
         public void Dispose()
         {
             _handler = null;
         }
 
-        public UniTask Handle(TMessage message, in CancellationToken cancelToken)
+        public UniTask Handle(TMessage message, CancellationToken cancelToken)
         {
             _handler?.Invoke();
             return UniTask.CompletedTask;

@@ -30,8 +30,9 @@ namespace ZBase.Foundation.PubSub.Internals
         public async UniTask PublishAsync(TMessage message, CancellationToken cancelToken, ILogger logger)
         {
             var handlerMap = _handlerMap;
+            var ordering = _ordering;
 
-            _ordering.GetUnsafe(out var orderArray, out var orderCount);
+            ordering.GetUnsafe(out var orderArray, out var orderCount);
             
             var orderValueArray = ZCPG.ValueArray<int>.Create(orderCount);
             orderArray.AsSpan(0, orderCount).CopyTo(orderValueArray.AsSpan(0, orderCount));
@@ -45,12 +46,7 @@ namespace ZBase.Foundation.PubSub.Internals
                 {
                     var order = orderArray[i];
 
-                    if (handlerMap.TryGetValue(order, out var handlers) == false)
-                    {
-                        continue;
-                    }
-
-                    if (handlers.Count < 1)
+                    if (handlerMap.TryGetValue(order, out var handlers) == false || handlers.Count < 1)
                     {
                         continue;
                     }
