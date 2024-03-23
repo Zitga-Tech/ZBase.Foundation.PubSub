@@ -21,8 +21,18 @@
         public float seconds;
     }
 
+    public struct CancellableTimeMessage : IMessage
+    {
+        public float seconds;
+    }
+
     public struct FrameMessage : IMessage
     {
         public int frames;
+    }
+
+    public struct DeltaTimeMessage : IMessage
+    {
+        public float value;
     }
 }

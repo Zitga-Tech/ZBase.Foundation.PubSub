@@ -21,11 +21,13 @@ namespace ZBase.Foundation.PubSub.Samples
         private readonly Messenger _messenger = new();
         private readonly List<ISubscription> _subscriptions = new();
         private CancellationTokenSource _cts;
+        private CachedPublisher<DeltaTimeMessage> _cachedDeltaTimePublisher;
 
         private void Awake()
         {
             Application.targetFrameRate = 60;
 
+            _cachedDeltaTimePublisher = _messenger.MessagePublisher.Cache<DeltaTimeMessage>();
             _subscribeButton.onClick.AddListener(SubscribeToAllMessages);
             _unsubscribeButton.onClick.AddListener(UnsubscribeFromAllMessages);
         }
@@ -49,14 +51,19 @@ namespace ZBase.Foundation.PubSub.Samples
             sub.Subscribe<FooMessage>(FooHandler).AddTo(subscriptions);
             sub.Subscribe<BarMessage>(BarHandler).AddTo(subscriptions);
             sub.Subscribe<TimeMessage>(TimeHandlerAsync).AddTo(subscriptions);
+            sub.Subscribe<CancellableTimeMessage>(CancellableTimeHandlerAsync).AddTo(subscriptions);
             sub.Subscribe<FrameMessage>(FrameHandlerAsync).AddTo(subscriptions);
-            sub.Subscribe<FrameMessage>(FrameHandlerAsyncCancellable).AddTo(subscriptions);
+            sub.Subscribe<DeltaTimeMessage>(DeltaTimeHandler).AddTo(subscriptions);
 
             Debug.Log("System has subscribed to all messages.");
         }
 
         private void UnsubscribeFromAllMessages()
         {
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = null;
+
             var subscriptions = _subscriptions;
 
             if (subscriptions.Count <= 0)
@@ -71,7 +78,7 @@ namespace ZBase.Foundation.PubSub.Samples
                 subscriptions[i]?.Unsubscribe();
 
                 /// Same functionality:
-                // subscriptions[i].Dispose();
+                // subscriptions[i]?.Dispose();
             }
 
             subscriptions.Clear();
@@ -103,24 +110,31 @@ namespace ZBase.Foundation.PubSub.Samples
 
             if (Input.GetKeyUp(KeyCode.Alpha4))
             {
-                pub.Publish(new FrameMessage { frames = 120 });
+                _cts?.Dispose();
+                _cts = new();
+
+                Debug.Log(Time.realtimeSinceStartupAsDouble);
+
+                _cts.CancelAfter(TimeSpan.FromSeconds(2f));
                 return;
             }
 
             if (Input.GetKeyUp(KeyCode.Alpha5))
             {
-                _cts?.Dispose();
-                _cts = new();
-
-                pub.Publish(new FrameMessage { frames = 120 }, _cts.Token);
-
-                _cts.CancelAfter(TimeSpan.FromSeconds(20 * Time.smoothDeltaTime));
+                pub.Publish(new FrameMessage { frames = 120 });
                 return;
             }
 
             if (Input.GetKeyUp(KeyCode.Alpha6))
             {
                 RunPublishAsync(_messenger).Forget();
+                return;
+            }
+
+            if (Input.GetKeyUp(KeyCode.Alpha7))
+            {
+                var cachedPub = _cachedDeltaTimePublisher;
+                cachedPub.Publish(new DeltaTimeMessage { value = Time.deltaTime });
                 return;
             }
         }
@@ -144,6 +158,24 @@ namespace ZBase.Foundation.PubSub.Samples
             Debug.Log($"{msg.GetType().Name}: done");
         }
 
+        private static async UniTask CancellableTimeHandlerAsync(CancellableTimeMessage msg, CancellationToken cancelToken)
+        {
+            const string NAME = nameof(CancellableTimeHandlerAsync);
+
+            Debug.Log($"{msg.GetType().Name}: {NAME}: wait for {msg.seconds} seconds");
+
+            try
+            {
+                await UniTask.Delay(TimeSpan.FromSeconds(msg.seconds), cancellationToken: cancelToken);
+            }
+            catch
+            {
+                Debug.LogWarning($"Cancellable time system has shut down");
+            }
+
+            Debug.Log($"{msg.GetType().Name}: {NAME}: done");
+        }
+
         private static async UniTask FrameHandlerAsync(FrameMessage msg)
         {
             const string NAME = nameof(FrameHandlerAsync);
@@ -155,22 +187,9 @@ namespace ZBase.Foundation.PubSub.Samples
             Debug.Log($"{msg.GetType().Name}: {NAME}: done");
         }
 
-        private static async UniTask FrameHandlerAsyncCancellable(FrameMessage msg, CancellationToken cancelToken)
+        private static void DeltaTimeHandler(DeltaTimeMessage msg)
         {
-            const string NAME = nameof(FrameHandlerAsyncCancellable);
-
-            Debug.Log($"{msg.GetType().Name}: {NAME}: wait for {msg.frames} frames");
-
-            try
-            {
-                await UniTask.DelayFrame(msg.frames, cancellationToken: cancelToken);
-            }
-            catch
-            {
-                Debug.LogWarning($"Frame system has shut down");
-            }
-
-            Debug.Log($"{msg.GetType().Name}: {NAME}: done");
+            Debug.Log($"{msg.GetType().Name}: {msg.value}");
         }
 
         private static async UniTaskVoid RunPublishAsync(Messenger messenger)
