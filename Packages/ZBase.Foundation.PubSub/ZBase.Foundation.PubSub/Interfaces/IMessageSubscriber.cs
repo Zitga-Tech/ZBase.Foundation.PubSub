@@ -45,37 +45,37 @@ namespace ZBase.Foundation.PubSub
 
         void Subscribe<TMessage>(
               Action handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         );
 
         void Subscribe<TMessage>(
               Action<TMessage> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         );
 
         void Subscribe<TMessage>(
               Func<CancellationToken, UniTask> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         );
 
         void Subscribe<TMessage>(
               MessageHandler<TMessage> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         );
 
         void Subscribe<TMessage>(
               Func<TMessage, UniTask> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         );
 
         void Subscribe<TMessage>(
               Func<UniTask> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         );
     }
@@ -121,37 +121,37 @@ namespace ZBase.Foundation.PubSub
 
         void Subscribe<TMessage>(
               Action handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         ) where TMessage : IMessage;
 
         void Subscribe<TMessage>(
               Action<TMessage> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         ) where TMessage : IMessage;
 
         void Subscribe<TMessage>(
               Func<CancellationToken, UniTask> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         ) where TMessage : IMessage;
 
         void Subscribe<TMessage>(
               MessageHandler<TMessage> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         ) where TMessage : IMessage;
 
         void Subscribe<TMessage>(
               Func<TMessage, UniTask> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         ) where TMessage : IMessage;
 
         void Subscribe<TMessage>(
               Func<UniTask> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         ) where TMessage : IMessage;
     }

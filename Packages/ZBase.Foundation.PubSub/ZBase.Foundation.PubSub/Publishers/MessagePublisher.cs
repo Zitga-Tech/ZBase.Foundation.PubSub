@@ -87,7 +87,7 @@ namespace ZBase.Foundation.PubSub
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Publish<TMessage>(
-                  in CancellationToken cancelToken = default
+                  CancellationToken cancelToken = default
                 , ILogger logger = null
             )
 #if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -101,7 +101,7 @@ namespace ZBase.Foundation.PubSub
 
             public void Publish<TMessage>(
                   TMessage message
-                , in CancellationToken cancelToken = default
+                , CancellationToken cancelToken = default
                 , ILogger logger = null
             )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -113,9 +113,7 @@ namespace ZBase.Foundation.PubSub
                 {
                     return;
                 }
-#endif
 
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
                 if (Scope == null)
                 {
                     (logger ?? DefaultLogger.Default).LogException(new System.NullReferenceException(nameof(Scope)));
@@ -143,7 +141,7 @@ namespace ZBase.Foundation.PubSub
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public UniTask PublishAsync<TMessage>(
-                  in CancellationToken cancelToken = default
+                  CancellationToken cancelToken = default
                 , ILogger logger = null
             )
 #if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -157,7 +155,7 @@ namespace ZBase.Foundation.PubSub
 
             public UniTask PublishAsync<TMessage>(
                   TMessage message
-                , in CancellationToken cancelToken = default
+                , CancellationToken cancelToken = default
                 , ILogger logger = null
             )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -169,9 +167,7 @@ namespace ZBase.Foundation.PubSub
                 {
                     return UniTask.CompletedTask;
                 }
-#endif
 
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
                 if (Scope == null)
                 {
                     (logger ?? DefaultLogger.Default).LogException(new System.NullReferenceException(nameof(Scope)));
@@ -209,7 +205,7 @@ namespace ZBase.Foundation.PubSub
                 }
 
                 UnityEngine.Debug.LogError(
-                    $"{GetType().Name} must be retrieved via `{nameof(MessagePublisher)}.{nameof(MessagePublisher.Scope)}` API"
+                    $"{GetType()} must be retrieved via `{nameof(MessagePublisher)}.{nameof(MessagePublisher.Scope)}` API"
                 );
 
                 return false;
@@ -220,7 +216,7 @@ namespace ZBase.Foundation.PubSub
             private static void LogWarning<TMessage>(TScope scope, ILogger logger)
             {
                 (logger ?? DefaultLogger.Default).LogWarning(
-                    $"Found no subscription for `{typeof(TMessage).Name}` in scope `{scope}`"
+                    $"Found no subscription for `{typeof(TMessage)}` in scope `{scope}`"
                 );
             }
 #endif

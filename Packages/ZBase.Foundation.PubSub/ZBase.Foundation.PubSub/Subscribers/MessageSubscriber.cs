@@ -171,7 +171,7 @@ namespace ZBase.Foundation.PubSub
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Subscribe<TMessage>(
                   Action handler
-                , in CancellationToken unsubscribeToken
+                , CancellationToken unsubscribeToken
                 , int order = 0
             )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -190,7 +190,7 @@ namespace ZBase.Foundation.PubSub
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Subscribe<TMessage>(
                   Action<TMessage> handler
-                , in CancellationToken unsubscribeToken
+                , CancellationToken unsubscribeToken
                 , int order = 0
             )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -209,7 +209,7 @@ namespace ZBase.Foundation.PubSub
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Subscribe<TMessage>(
                   Func<UniTask> handler
-                , in CancellationToken unsubscribeToken
+                , CancellationToken unsubscribeToken
                 , int order = 0
             )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -228,7 +228,7 @@ namespace ZBase.Foundation.PubSub
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Subscribe<TMessage>(
                   Func<TMessage, UniTask> handler
-                , in CancellationToken unsubscribeToken
+                , CancellationToken unsubscribeToken
                 , int order = 0
             )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -247,7 +247,7 @@ namespace ZBase.Foundation.PubSub
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Subscribe<TMessage>(
                   Func<CancellationToken, UniTask> handler
-                , in CancellationToken unsubscribeToken
+                , CancellationToken unsubscribeToken
                 , int order = 0
             )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -266,7 +266,7 @@ namespace ZBase.Foundation.PubSub
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Subscribe<TMessage>(
                   MessageHandler<TMessage> handler
-                , in CancellationToken unsubscribeToken
+                , CancellationToken unsubscribeToken
                 , int order = 0
             )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -339,7 +339,7 @@ namespace ZBase.Foundation.PubSub
                 }
 
                 UnityEngine.Debug.LogError(
-                    $"{GetType().Name} must be retrieved via `{nameof(MessageSubscriber)}.{nameof(MessageSubscriber.Scope)}` API"
+                    $"{GetType()} must be retrieved via `{nameof(MessageSubscriber)}.{nameof(MessageSubscriber.Scope)}` API"
                 );
 
                 return false;

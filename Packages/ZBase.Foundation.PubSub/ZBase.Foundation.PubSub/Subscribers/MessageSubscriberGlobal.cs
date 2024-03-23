@@ -125,7 +125,7 @@ namespace ZBase.Foundation.PubSub
         public static void Subscribe<TMessage>(
               this MessageSubscriber self
             , Action handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -142,7 +142,7 @@ namespace ZBase.Foundation.PubSub
         public static void Subscribe<TMessage>(
               this MessageSubscriber self
             , Action<TMessage> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -159,7 +159,7 @@ namespace ZBase.Foundation.PubSub
         public static void Subscribe<TMessage>(
               this MessageSubscriber self
             , Func<CancellationToken, UniTask> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -176,7 +176,7 @@ namespace ZBase.Foundation.PubSub
         public static void Subscribe<TMessage>(
               this MessageSubscriber self
             , MessageHandler<TMessage> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -193,7 +193,7 @@ namespace ZBase.Foundation.PubSub
         public static void Subscribe<TMessage>(
               this MessageSubscriber self
             , Func<TMessage, UniTask> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -210,7 +210,7 @@ namespace ZBase.Foundation.PubSub
         public static void Subscribe<TMessage>(
               this MessageSubscriber self
             , Func<UniTask> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE

@@ -15,7 +15,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Publish<TMessage>(
               this MessagePublisher self
-            , in CancellationToken cancelToken = default
+            , CancellationToken cancelToken = default
             , ILogger logger = null
         )
 #if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -34,7 +34,7 @@ namespace ZBase.Foundation.PubSub
         public static void Publish<TMessage>(
               this MessagePublisher self
             , TMessage message
-            , in CancellationToken cancelToken = default
+            , CancellationToken cancelToken = default
             , ILogger logger = null
         )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -50,7 +50,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static UniTask PublishAsync<TMessage>(
               this MessagePublisher self
-            , in CancellationToken cancelToken = default
+            , CancellationToken cancelToken = default
             , ILogger logger = null
         )
 #if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -69,7 +69,7 @@ namespace ZBase.Foundation.PubSub
         public static UniTask PublishAsync<TMessage>(
               this MessagePublisher self
             , TMessage message
-            , in CancellationToken cancelToken = default
+            , CancellationToken cancelToken = default
             , ILogger logger = null
         )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE

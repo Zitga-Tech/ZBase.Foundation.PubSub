@@ -31,19 +31,19 @@ namespace ZBase.Foundation.PubSub
 
         void Subscribe(
               Action handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         );
 
         void Subscribe(
               Func<CancellationToken, UniTask> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         );
 
         void Subscribe(
               Func<UniTask> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         );
     }

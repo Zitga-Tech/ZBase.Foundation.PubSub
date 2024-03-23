@@ -66,7 +66,7 @@ namespace ZBase.Foundation.PubSub
         public static void Subscribe(
               this AnonSubscriber self
             , Action handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         )
         {
@@ -80,7 +80,7 @@ namespace ZBase.Foundation.PubSub
         public static void Subscribe(
               this AnonSubscriber self
             , Func<CancellationToken, UniTask> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         )
         {
@@ -94,7 +94,7 @@ namespace ZBase.Foundation.PubSub
         public static void Subscribe(
               this AnonSubscriber self
             , Func<UniTask> handler
-            , in CancellationToken unsubscribeToken
+            , CancellationToken unsubscribeToken
             , int order = 0
         )
         {

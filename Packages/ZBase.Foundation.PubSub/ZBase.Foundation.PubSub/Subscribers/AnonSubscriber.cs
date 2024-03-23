@@ -129,7 +129,7 @@ namespace ZBase.Foundation.PubSub
 #endif
             public void Subscribe(
                   Action handler
-                , in CancellationToken unsubscribeToken
+                , CancellationToken unsubscribeToken
                 , int order = 0
             )
             {
@@ -148,7 +148,7 @@ namespace ZBase.Foundation.PubSub
 #endif
             public void Subscribe(
                   Func<CancellationToken, UniTask> handler
-                , in CancellationToken unsubscribeToken
+                , CancellationToken unsubscribeToken
                 , int order = 0
             )
             {
@@ -167,7 +167,7 @@ namespace ZBase.Foundation.PubSub
 #endif
             public void Subscribe(
                   Func<UniTask> handler
-                , in CancellationToken unsubscribeToken
+                , CancellationToken unsubscribeToken
                 , int order = 0
             )
             {

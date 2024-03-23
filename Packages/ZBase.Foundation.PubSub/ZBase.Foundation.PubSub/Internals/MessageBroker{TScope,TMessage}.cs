@@ -14,7 +14,7 @@ namespace ZBase.Foundation.PubSub.Internals
 
         public UniTask PublishAsync(
               TScope scope, TMessage message
-            , in CancellationToken cancelToken
+            , CancellationToken cancelToken
             , ILogger logger
         )
         {

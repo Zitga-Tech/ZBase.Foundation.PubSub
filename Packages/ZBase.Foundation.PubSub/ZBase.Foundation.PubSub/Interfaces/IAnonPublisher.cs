@@ -9,12 +9,12 @@ namespace ZBase.Foundation.PubSub
     public interface IAnonPublisher
     {
         void Publish(
-              in CancellationToken cancelToken = default
+              CancellationToken cancelToken = default
             , ILogger logger = null
         );
 
         UniTask PublishAsync(
-              in CancellationToken cancelToken = default
+              CancellationToken cancelToken = default
             , ILogger logger = null
         );
     }

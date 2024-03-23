@@ -8,24 +8,24 @@ namespace ZBase.Foundation.PubSub
     public interface IMessagePublisher
     {
         void Publish<TMessage>(
-              in CancellationToken cancelToken = default
+              CancellationToken cancelToken = default
             , ILogger logger = null
         ) where TMessage : new();
 
         void Publish<TMessage>(
               TMessage message
-            , in CancellationToken cancelToken = default
+            , CancellationToken cancelToken = default
             , ILogger logger = null
         );
 
         UniTask PublishAsync<TMessage>(
-              in CancellationToken cancelToken = default
+              CancellationToken cancelToken = default
             , ILogger logger = null
         ) where TMessage : new();
 
         UniTask PublishAsync<TMessage>(
               TMessage message
-            , in CancellationToken cancelToken = default
+            , CancellationToken cancelToken = default
             , ILogger logger = null
         );
     }
@@ -35,24 +35,24 @@ namespace ZBase.Foundation.PubSub
     public interface IMessagePublisher
     {
         void Publish<TMessage>(
-              in CancellationToken cancelToken = default
+              CancellationToken cancelToken = default
             , ILogger logger = null
         ) where TMessage : IMessage, new();
 
         void Publish<TMessage>(
               TMessage message
-            , in CancellationToken cancelToken = default
+            , CancellationToken cancelToken = default
             , ILogger logger = null
         ) where TMessage : IMessage;
 
         UniTask PublishAsync<TMessage>(
-              in CancellationToken cancelToken = default
+              CancellationToken cancelToken = default
             , ILogger logger = null
         ) where TMessage : IMessage, new();
 
         UniTask PublishAsync<TMessage>(
               TMessage message
-            , in CancellationToken cancelToken = default
+            , CancellationToken cancelToken = default
             , ILogger logger = null
         ) where TMessage : IMessage;
     }

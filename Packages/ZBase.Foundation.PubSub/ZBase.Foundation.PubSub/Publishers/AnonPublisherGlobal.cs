@@ -16,7 +16,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Publish(
               this AnonPublisher self
-            , in CancellationToken cancelToken = default
+            , CancellationToken cancelToken = default
             , ILogger logger = null
         )
         {
@@ -29,7 +29,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static UniTask PublishAsync(
               this AnonPublisher self
-            , in CancellationToken cancelToken = default
+            , CancellationToken cancelToken = default
             , ILogger logger = null
         )
         {
