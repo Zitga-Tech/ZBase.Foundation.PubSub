@@ -69,7 +69,7 @@
       }
     },
     "com.zbase.collections.pooled": {
-      "version": "2.8.1",
+      "version": "2.8.4",
       "depth": 0,
       "source": "registry",
       "dependencies": {
