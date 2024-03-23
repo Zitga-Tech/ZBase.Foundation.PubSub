@@ -44,6 +44,11 @@ namespace ZBase.Foundation.PubSub.Internals
             {
                 for (var i = orderCount - 1; i >= 0; i--)
                 {
+                    if (cancelToken.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
                     var order = orderArray[i];
 
                     if (handlerMap.TryGetValue(order, out var handlers) == false || handlers.Count < 1)

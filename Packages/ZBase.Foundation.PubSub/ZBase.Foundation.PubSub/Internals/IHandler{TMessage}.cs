@@ -31,6 +31,11 @@ namespace ZBase.Foundation.PubSub.Internals
 
         public UniTask Handle(TMessage message, CancellationToken cancelToken)
         {
+            if (cancelToken.IsCancellationRequested)
+            {
+                return UniTask.CompletedTask;
+            }
+
             return _handler?.Invoke(message, cancelToken) ?? UniTask.CompletedTask;
         }
     }
@@ -55,6 +60,11 @@ namespace ZBase.Foundation.PubSub.Internals
 
         public UniTask Handle(TMessage message, CancellationToken cancelToken)
         {
+            if (cancelToken.IsCancellationRequested)
+            {
+                return UniTask.CompletedTask;
+            }
+
             return _handler?.Invoke(cancelToken) ?? UniTask.CompletedTask;
         }
     }
@@ -79,6 +89,11 @@ namespace ZBase.Foundation.PubSub.Internals
 
         public UniTask Handle(TMessage message, CancellationToken cancelToken)
         {
+            if (cancelToken.IsCancellationRequested)
+            {
+                return UniTask.CompletedTask;
+            }
+
             return _handler?.Invoke(message) ?? UniTask.CompletedTask;
         }
     }
@@ -103,6 +118,11 @@ namespace ZBase.Foundation.PubSub.Internals
 
         public UniTask Handle(TMessage message, CancellationToken cancelToken)
         {
+            if (cancelToken.IsCancellationRequested)
+            {
+                return UniTask.CompletedTask;
+            }
+
             return _handler?.Invoke() ?? UniTask.CompletedTask;
         }
     }
@@ -127,6 +147,11 @@ namespace ZBase.Foundation.PubSub.Internals
 
         public UniTask Handle(TMessage message, CancellationToken cancelToken)
         {
+            if (cancelToken.IsCancellationRequested)
+            {
+                return UniTask.CompletedTask;
+            }
+
             _handler?.Invoke(message);
             return UniTask.CompletedTask;
         }
@@ -152,6 +177,11 @@ namespace ZBase.Foundation.PubSub.Internals
 
         public UniTask Handle(TMessage message, CancellationToken cancelToken)
         {
+            if (cancelToken.IsCancellationRequested)
+            {
+                return UniTask.CompletedTask;
+            }
+
             _handler?.Invoke();
             return UniTask.CompletedTask;
         }
