@@ -18,12 +18,17 @@ namespace ZBase.Foundation.PubSub.Internals
             , ILogger logger
         )
         {
-            if (_scopedBrokers.TryGetValue(scope, out var broker))
-            {
-                return broker.PublishAsync(message, cancelToken, logger);
-            }
+            var scopedBrokers = _scopedBrokers;
 
-            return UniTask.CompletedTask;
+            lock (scopedBrokers)
+            {
+                if (scopedBrokers.TryGetValue(scope, out var broker))
+                {
+                    return broker.PublishAsync(message, cancelToken, logger);
+                }
+
+                return UniTask.CompletedTask;
+            }
         }
 
         public Subscription<TMessage> Subscribe(
@@ -49,52 +54,61 @@ namespace ZBase.Foundation.PubSub.Internals
 
         public override void Dispose()
         {
-            _scopedBrokers.GetUnsafeValues(out var brokerArray, out var count);
-            var brokers = brokerArray.AsSpan(0, count);
+            var scopedBrokers = _scopedBrokers;
 
-            foreach (var broker in brokers)
+            lock (scopedBrokers)
             {
-                broker?.Dispose();
-            }
+                scopedBrokers.GetUnsafeValues(out var brokerArray, out var count);
+                var brokers = brokerArray.AsSpan(0, count);
 
-            _scopedBrokers.Dispose();
+                foreach (var broker in brokers)
+                {
+                    broker?.Dispose();
+                }
+
+                scopedBrokers.Dispose();
+            }
         }
 
         public override void Compress()
         {
             var scopedBrokers = _scopedBrokers;
-            scopedBrokers.GetUnsafe(out var keys, out var values, out var count);
 
-            var scopesToRemove = ValueList<TScope>.Create(count);
+            lock (scopedBrokers)
+            {
+                scopedBrokers.GetUnsafe(out var keys, out var values, out var count);
+
+                var scopesToRemove = ValueList<TScope>.Create(count);
 
 #if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-            try
+                try
 #endif
-            {
-                for (var i = count - 1; i >= 0; i--)
                 {
-                    var broker = values[i];
-                    broker.Compress();
-
-                    if (broker.IsEmpty)
+                    for (var i = count - 1; i >= 0; i--)
                     {
-                        broker.Dispose();
-                        scopesToRemove.Add(keys[i].Key);
+                        var broker = values[i];
+                        broker.Compress();
+
+                        if (broker.IsEmpty)
+                        {
+                            broker.Dispose();
+                            scopesToRemove.Add(keys[i].Key);
+                        }
+                    }
+
+                    scopesToRemove.GetUnsafe(out var scopes, out count);
+
+                    for (var i = count - 1; i >= 0; i--)
+                    {
+                        _scopedBrokers.Remove(scopes[i]);
                     }
                 }
-
-                scopesToRemove.GetUnsafe(out var scopes, out count);
-
-                for (var i = count - 1; i >= 0; i--)
-                {
-                    _scopedBrokers.Remove(scopes[i]);
-                }
-            }
 #if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-            finally
+                finally
 #endif
-            {
-                scopesToRemove.Dispose();
+                {
+                    scopesToRemove.Dispose();
+                }
             }
         }
 
@@ -105,17 +119,20 @@ namespace ZBase.Foundation.PubSub.Internals
         {
             var scopedBrokers = _scopedBrokers;
 
-            if (scopedBrokers.TryGetValue(scope, out var broker) == false)
+            lock (scopedBrokers)
             {
-                return;
-            }
+                if (scopedBrokers.TryGetValue(scope, out var broker) == false)
+                {
+                    return;
+                }
 
-            broker.Compress();
+                broker.Compress();
 
-            if (broker.IsEmpty)
-            {
-                scopedBrokers.Remove(scope);
-                broker.Dispose();
+                if (broker.IsEmpty)
+                {
+                    scopedBrokers.Remove(scope);
+                    broker.Dispose();
+                }
             }
         }
     }
