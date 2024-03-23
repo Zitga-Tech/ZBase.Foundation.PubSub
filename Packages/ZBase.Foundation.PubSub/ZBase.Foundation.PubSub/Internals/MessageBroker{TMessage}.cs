@@ -65,10 +65,10 @@ namespace ZBase.Foundation.PubSub.Internals
                 logger?.LogException(ex);
             }
             finally
+#endif
             {
                 orderValueArray.Dispose();
             }
-#endif
         }
 
         private static async UniTask PublishAsync(
@@ -104,11 +104,11 @@ namespace ZBase.Foundation.PubSub.Internals
                 logger?.LogException(ex);
             }
             finally
+#endif
             {
                 taskArrayPool.Return(tasks);
                 handlerValueArray.Dispose();
             }
-#endif
         }
 
         public Subscription<TMessage> Subscribe(IHandler<TMessage> handler, int order)
