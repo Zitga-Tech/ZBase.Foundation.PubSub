@@ -47,7 +47,7 @@ namespace ZBase.Foundation.PubSub
             if (scope == null)
             {
                 (logger ?? DefaultLogger.Default).LogException(new System.ArgumentNullException(nameof(scope)));
-                return CachedPublisherEmpty<TMessage>.Default;
+                return default;
             }
 #endif
 
@@ -61,13 +61,19 @@ namespace ZBase.Foundation.PubSub
 
                     if (brokers.TryAdd(scopedBroker) == false)
                     {
+#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+                        (logger ?? DefaultLogger.Default).LogError(
+                            $"Something went wrong when registering a new instance of {typeof(MessageBroker<TScope, TMessage>)}!"
+                        );
+#endif
+
                         scopedBroker?.Dispose();
-                        return CachedPublisherEmpty<TMessage>.Default;
+                        return default;
                     }
                 }
 
                 var broker = scopedBroker.Cache(scope, _taskArrayPool);
-                return new Internals.CachedPublisher<TMessage>(broker);
+                return new CachedPublisher<TMessage>(broker);
             }
         }
 
