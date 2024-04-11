@@ -2,6 +2,7 @@
 #define __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
 #endif
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -44,9 +45,10 @@ namespace ZBase.Foundation.PubSub
             where TMessage : IMessage, new()
 #endif
         {
-            return Cache<GlobalScope, TMessage>(default, logger);
+            return Global().Cache<TMessage>(logger);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CachedPublisher<TMessage> Cache<TScope, TMessage>(TScope scope, ILogger logger = null)
 #if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
             where TMessage : new()
@@ -54,38 +56,7 @@ namespace ZBase.Foundation.PubSub
             where TMessage : IMessage, new()
 #endif
         {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-            if (scope == null)
-            {
-                (logger ?? DefaultLogger.Default).LogException(new System.ArgumentNullException(nameof(scope)));
-                return default;
-            }
-#endif
-
-            var brokers = _brokers;
-
-            lock (brokers)
-            {
-                if (brokers.TryGet<MessageBroker<TScope, TMessage>>(out var scopedBroker) == false)
-                {
-                    scopedBroker = new MessageBroker<TScope, TMessage>();
-
-                    if (brokers.TryAdd(scopedBroker) == false)
-                    {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                        (logger ?? DefaultLogger.Default).LogError(
-                            $"Something went wrong when registering a new instance of {typeof(MessageBroker<TScope, TMessage>)}!"
-                        );
-#endif
-
-                        scopedBroker?.Dispose();
-                        return default;
-                    }
-                }
-
-                var broker = scopedBroker.Cache(scope, _taskArrayPool);
-                return new CachedPublisher<TMessage>(broker);
-            }
+            return Scope(scope).Cache<TMessage>(logger);
         }
 
         public readonly struct Publisher<TScope> : IMessagePublisher<TScope>
@@ -96,10 +67,56 @@ namespace ZBase.Foundation.PubSub
 
             public bool IsValid => _publisher != null;
 
-            internal Publisher(MessagePublisher publisher, TScope scope)
+            internal Publisher(MessagePublisher publisher, [NotNull] TScope scope)
             {
                 _publisher = publisher;
                 Scope = scope;
+            }
+
+            public CachedPublisher<TMessage> Cache<TMessage>(ILogger logger = null)
+#if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : new()
+#else
+                where TMessage : IMessage, new()
+#endif
+            {
+#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+                if (Validate() == false)
+                {
+                    return default;
+                }
+
+                if (Scope == null)
+                {
+                    (logger ?? DefaultLogger.Default).LogException(new System.NullReferenceException(nameof(Scope)));
+                    return default;
+                }
+#endif
+
+                var brokers = _publisher._brokers;
+
+                lock (brokers)
+                {
+                    if (brokers.TryGet<MessageBroker<TScope, TMessage>>(out var scopedBroker) == false)
+                    {
+                        scopedBroker = new MessageBroker<TScope, TMessage>();
+
+                        if (brokers.TryAdd(scopedBroker) == false)
+                        {
+#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+                            (logger ?? DefaultLogger.Default).LogError(
+                                $"Something went wrong when registering a new instance of {typeof(MessageBroker<TScope, TMessage>)}!"
+                            );
+#endif
+
+                            scopedBroker?.Dispose();
+                            return default;
+                        }
+                    }
+
+                    var broker = scopedBroker.Cache(Scope, _publisher._taskArrayPool);
+                    return new CachedPublisher<TMessage>(broker);
+                }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

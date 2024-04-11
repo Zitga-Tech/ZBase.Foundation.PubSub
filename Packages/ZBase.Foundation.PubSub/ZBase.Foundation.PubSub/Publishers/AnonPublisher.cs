@@ -38,9 +38,15 @@ namespace ZBase.Foundation.PubSub
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public CachedPublisher<AnonMessage> Cache(ILogger logger = null)
+        {
+            return Global().Cache(logger);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CachedPublisher<AnonMessage> Cache<TScope>(TScope scope, ILogger logger = null)
         {
-            return _publisher.Cache<TScope, AnonMessage>(scope, logger);
+            return Scope(scope).Cache(logger);
         }
 
         /// <summary>
@@ -57,6 +63,21 @@ namespace ZBase.Foundation.PubSub
             internal Publisher(MessagePublisher.Publisher<TScope> publisher)
             {
                 _publisher = publisher;
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public CachedPublisher<AnonMessage> Cache(ILogger logger = null)
+            {
+#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+                if (Validate() == false)
+                {
+                    return default;
+                }
+#endif
+
+                return _publisher.Cache<AnonMessage>(logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
