@@ -45,7 +45,7 @@ namespace ZBase.Foundation.PubSub
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CachedPublisher<TMessage> Cache<TMessage>(ILogger logger = null)
+        public CachedPublisher<TMessage> GlobalCache<TMessage>(ILogger logger = null)
 #if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
             where TMessage : new()
 #else

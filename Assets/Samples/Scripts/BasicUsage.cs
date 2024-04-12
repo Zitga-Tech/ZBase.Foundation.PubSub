@@ -27,7 +27,7 @@ namespace ZBase.Foundation.PubSub.Samples
         {
             Application.targetFrameRate = 60;
 
-            _cachedDeltaTimePublisher = _messenger.MessagePublisher.Cache<DeltaTimeMessage>();
+            _cachedDeltaTimePublisher = _messenger.MessagePublisher.GlobalCache<DeltaTimeMessage>();
             _subscribeButton.onClick.AddListener(SubscribeToAllMessages);
             _unsubscribeButton.onClick.AddListener(UnsubscribeFromAllMessages);
         }

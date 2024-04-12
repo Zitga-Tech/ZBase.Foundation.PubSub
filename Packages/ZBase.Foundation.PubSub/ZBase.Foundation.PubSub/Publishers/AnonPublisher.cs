@@ -45,7 +45,7 @@ namespace ZBase.Foundation.PubSub
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CachedPublisher<AnonMessage> Cache(ILogger logger = null)
+        public CachedPublisher<AnonMessage> GlobalCache(ILogger logger = null)
         {
             return Global().Cache(logger);
         }
