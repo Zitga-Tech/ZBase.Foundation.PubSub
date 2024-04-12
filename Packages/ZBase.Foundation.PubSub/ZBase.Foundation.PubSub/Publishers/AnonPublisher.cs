@@ -32,6 +32,13 @@ namespace ZBase.Foundation.PubSub
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Publisher<TScope> Scope<TScope>()
+            where TScope : struct
+        {
+            return new(_publisher.Scope(default(TScope)));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Publisher<TScope> Scope<TScope>(TScope scope)
         {
             return new(_publisher.Scope(scope));
@@ -42,7 +49,14 @@ namespace ZBase.Foundation.PubSub
         {
             return Global().Cache(logger);
         }
-        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public CachedPublisher<AnonMessage> Cache<TScope>(ILogger logger = null)
+            where TScope : struct
+        {
+            return Scope(default(TScope)).Cache(logger);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CachedPublisher<AnonMessage> Cache<TScope>(TScope scope, ILogger logger = null)
         {
