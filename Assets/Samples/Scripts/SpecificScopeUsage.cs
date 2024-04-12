@@ -52,7 +52,7 @@ namespace ZBase.Foundation.PubSub.Samples
             sub.Scope(new UnityObjectScope(this))
                .Subscribe<FooMessage>(FooHandler_In_MonoBehaviourScope, unsubscribeToken: token);
 
-            sub.Scope(new UnityObjectScope(this.gameObject))
+            sub.UnityScope(this.gameObject)
                .Subscribe<FooMessage>(FooHandler_In_GameObjectScope, unsubscribeToken: token);
 
             Debug.Log("System has subscribed to all messages.");
@@ -97,7 +97,7 @@ namespace ZBase.Foundation.PubSub.Samples
 
             if (Input.GetKeyUp(KeyCode.Alpha4))
             {
-                pub.Scope(new UnityObjectScope(this.gameObject))
+                pub.UnityScope(this.gameObject)
                    .Publish(new FooMessage {
                     value = $"[{nameof(GameObject)}] InstanceId = {this.gameObject.GetInstanceID()}" 
                 });

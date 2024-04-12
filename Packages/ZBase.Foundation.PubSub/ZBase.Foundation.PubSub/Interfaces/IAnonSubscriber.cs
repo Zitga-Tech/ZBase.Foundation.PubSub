@@ -12,39 +12,45 @@ namespace ZBase.Foundation.PubSub
         /// <summary>
         /// Remove empty handler groups to optimize performance.
         /// </summary>
-        void Compress();
+        void Compress(ILogger logger = null);
 
         ISubscription Subscribe(
               Action handler
             , int order = 0
+            , ILogger logger = null
         );
 
         ISubscription Subscribe(
               Func<CancellationToken, UniTask> handler
             , int order = 0
+            , ILogger logger = null
         );
 
         ISubscription Subscribe(
               Func<UniTask> handler
             , int order = 0
+            , ILogger logger = null
         );
 
         void Subscribe(
               Action handler
             , CancellationToken unsubscribeToken
             , int order = 0
+            , ILogger logger = null
         );
 
         void Subscribe(
               Func<CancellationToken, UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
+            , ILogger logger = null
         );
 
         void Subscribe(
               Func<UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
+            , ILogger logger = null
         );
     }
 

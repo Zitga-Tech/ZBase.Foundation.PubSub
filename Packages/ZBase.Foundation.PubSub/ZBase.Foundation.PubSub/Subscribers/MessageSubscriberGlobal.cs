@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -28,7 +29,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISubscription Subscribe<TMessage>(
               this MessageSubscriber self
-            , Action handler
+            , [NotNull] Action handler
             , int order = 0
         )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -44,7 +45,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISubscription Subscribe<TMessage>(
               this MessageSubscriber self
-            , Action<TMessage> handler
+            , [NotNull] Action<TMessage> handler
             , int order = 0
         )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -60,7 +61,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISubscription Subscribe<TMessage>(
               this MessageSubscriber self
-            , Func<CancellationToken, UniTask> handler
+            , [NotNull] Func<CancellationToken, UniTask> handler
             , int order = 0
         )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -76,7 +77,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISubscription Subscribe<TMessage>(
               this MessageSubscriber self
-            , MessageHandler<TMessage> handler
+            , [NotNull] MessageHandler<TMessage> handler
             , int order = 0
         )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -92,7 +93,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISubscription Subscribe<TMessage>(
               this MessageSubscriber self
-            , Func<TMessage, UniTask> handler
+            , [NotNull] Func<TMessage, UniTask> handler
             , int order = 0
         )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -108,7 +109,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISubscription Subscribe<TMessage>(
               this MessageSubscriber self
-            , Func<UniTask> handler
+            , [NotNull] Func<UniTask> handler
             , int order = 0
         )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -124,7 +125,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Subscribe<TMessage>(
               this MessageSubscriber self
-            , Action handler
+            , [NotNull] Action handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )
@@ -141,7 +142,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Subscribe<TMessage>(
               this MessageSubscriber self
-            , Action<TMessage> handler
+            , [NotNull] Action<TMessage> handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )
@@ -158,7 +159,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Subscribe<TMessage>(
               this MessageSubscriber self
-            , Func<CancellationToken, UniTask> handler
+            , [NotNull] Func<CancellationToken, UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )
@@ -175,7 +176,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Subscribe<TMessage>(
               this MessageSubscriber self
-            , MessageHandler<TMessage> handler
+            , [NotNull] MessageHandler<TMessage> handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )
@@ -192,7 +193,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Subscribe<TMessage>(
               this MessageSubscriber self
-            , Func<TMessage, UniTask> handler
+            , [NotNull] Func<TMessage, UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )
@@ -209,7 +210,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Subscribe<TMessage>(
               this MessageSubscriber self
-            , Func<UniTask> handler
+            , [NotNull] Func<UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )

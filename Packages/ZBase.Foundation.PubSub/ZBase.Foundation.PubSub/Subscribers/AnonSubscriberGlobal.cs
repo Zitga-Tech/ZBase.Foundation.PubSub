@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Cysharp.Threading.Tasks;
@@ -26,7 +27,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISubscription Subscribe(
               this AnonSubscriber self
-            , Action handler
+            , [NotNull] Action handler
             , int order = 0
         )
         {
@@ -39,7 +40,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISubscription Subscribe(
               this AnonSubscriber self
-            , Func<CancellationToken, UniTask> handler
+            , [NotNull] Func<CancellationToken, UniTask> handler
             , int order = 0
         )
         {
@@ -52,7 +53,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ISubscription Subscribe(
               this AnonSubscriber self
-            , Func<UniTask> handler
+            , [NotNull] Func<UniTask> handler
             , int order = 0
         )
         {
@@ -65,7 +66,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Subscribe(
               this AnonSubscriber self
-            , Action handler
+            , [NotNull] Action handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )
@@ -79,7 +80,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Subscribe(
               this AnonSubscriber self
-            , Func<CancellationToken, UniTask> handler
+            , [NotNull] Func<CancellationToken, UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )
@@ -93,7 +94,7 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Subscribe(
               this AnonSubscriber self
-            , Func<UniTask> handler
+            , [NotNull] Func<UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )

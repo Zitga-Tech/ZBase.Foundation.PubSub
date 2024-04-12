@@ -11,72 +11,84 @@ namespace ZBase.Foundation.PubSub
         /// <summary>
         /// Remove empty handler groups to optimize performance.
         /// </summary>
-        void Compress<TMessage>();
+        void Compress<TMessage>(ILogger logger = null);
 
         ISubscription Subscribe<TMessage>(
               Action handler
             , int order = 0
+            , ILogger logger = null
         );
 
         ISubscription Subscribe<TMessage>(
               Action<TMessage> handler
             , int order = 0
+            , ILogger logger = null
         );
 
         ISubscription Subscribe<TMessage>(
               Func<CancellationToken, UniTask> handler
             , int order = 0
+            , ILogger logger = null
         );
 
         ISubscription Subscribe<TMessage>(
               MessageHandler<TMessage> handler
             , int order = 0
+            , ILogger logger = null
         );
 
         ISubscription Subscribe<TMessage>(
               Func<TMessage, UniTask> handler
             , int order = 0
+            , ILogger logger = null
         );
 
         ISubscription Subscribe<TMessage>(
               Func<UniTask> handler
             , int order = 0
+            , ILogger logger = null
         );
 
         void Subscribe<TMessage>(
               Action handler
             , CancellationToken unsubscribeToken
             , int order = 0
+            , ILogger logger = null
         );
 
         void Subscribe<TMessage>(
               Action<TMessage> handler
             , CancellationToken unsubscribeToken
             , int order = 0
+            , ILogger logger = null
         );
 
         void Subscribe<TMessage>(
               Func<CancellationToken, UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
+            , ILogger logger = null
         );
 
         void Subscribe<TMessage>(
               MessageHandler<TMessage> handler
             , CancellationToken unsubscribeToken
             , int order = 0
+            , ILogger logger = null
         );
 
         void Subscribe<TMessage>(
               Func<TMessage, UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
+            , ILogger logger = null
         );
 
         void Subscribe<TMessage>(
               Func<UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
+            , ILogger logger = null
         );
     }
 
@@ -87,72 +99,84 @@ namespace ZBase.Foundation.PubSub
         /// <summary>
         /// Remove empty handler groups to optimize performance.
         /// </summary>
-        void Compress<TMessage>() where TMessage : IMessage;
+        void Compress<TMessage>(ILogger logger = null) where TMessage : IMessage;
 
         ISubscription Subscribe<TMessage>(
               Action handler
             , int order = 0
+            , ILogger logger = null
         ) where TMessage : IMessage;
 
         ISubscription Subscribe<TMessage>(
               Action<TMessage> handler
             , int order = 0
+            , ILogger logger = null
         ) where TMessage : IMessage;
 
         ISubscription Subscribe<TMessage>(
               Func<CancellationToken, UniTask> handler
             , int order = 0
+            , ILogger logger = null
         ) where TMessage : IMessage;
 
         ISubscription Subscribe<TMessage>(
               MessageHandler<TMessage> handler
             , int order = 0
+            , ILogger logger = null
         ) where TMessage : IMessage;
 
         ISubscription Subscribe<TMessage>(
               Func<TMessage, UniTask> handler
             , int order = 0
+            , ILogger logger = null
         ) where TMessage : IMessage;
 
         ISubscription Subscribe<TMessage>(
               Func<UniTask> handler
             , int order = 0
+            , ILogger logger = null
         ) where TMessage : IMessage;
 
         void Subscribe<TMessage>(
               Action handler
             , CancellationToken unsubscribeToken
             , int order = 0
+            , ILogger logger = null
         ) where TMessage : IMessage;
 
         void Subscribe<TMessage>(
               Action<TMessage> handler
             , CancellationToken unsubscribeToken
             , int order = 0
+            , ILogger logger = null
         ) where TMessage : IMessage;
 
         void Subscribe<TMessage>(
               Func<CancellationToken, UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
+            , ILogger logger = null
         ) where TMessage : IMessage;
 
         void Subscribe<TMessage>(
               MessageHandler<TMessage> handler
             , CancellationToken unsubscribeToken
             , int order = 0
+            , ILogger logger = null
         ) where TMessage : IMessage;
 
         void Subscribe<TMessage>(
               Func<TMessage, UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
+            , ILogger logger = null
         ) where TMessage : IMessage;
 
         void Subscribe<TMessage>(
               Func<UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
+            , ILogger logger = null
         ) where TMessage : IMessage;
     }
 
