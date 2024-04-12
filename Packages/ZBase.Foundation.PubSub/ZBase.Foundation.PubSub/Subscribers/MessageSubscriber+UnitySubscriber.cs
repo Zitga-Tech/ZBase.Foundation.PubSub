@@ -43,7 +43,7 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                _subscriber.Compress<TMessage>();
+                _subscriber.Compress<TMessage>(logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__

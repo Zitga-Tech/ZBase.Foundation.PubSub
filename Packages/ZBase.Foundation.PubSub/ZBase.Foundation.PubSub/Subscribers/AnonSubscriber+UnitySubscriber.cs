@@ -16,7 +16,7 @@ namespace ZBase.Foundation.PubSub
         /// <summary>
         /// Anonymous Subscriber allows registering handlers that take no message argument
         /// </summary>
-        public readonly struct UnitySubscriber<TScope> : IAnonSubscriber<TScope>
+        public readonly partial struct UnitySubscriber<TScope> : IAnonSubscriber<TScope>
             where TScope : UnityEngine.Object
         {
             private readonly MessageSubscriber.UnitySubscriber<TScope> _subscriber;
@@ -43,7 +43,7 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                _subscriber.Compress<AnonMessage>();
+                _subscriber.Compress<AnonMessage>(logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -62,7 +62,7 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                return _subscriber.Subscribe<AnonMessage>(handler, order);
+                return _subscriber.Subscribe<AnonMessage>(handler, order, logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -81,7 +81,7 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                return _subscriber.Subscribe<AnonMessage>(handler, order);
+                return _subscriber.Subscribe<AnonMessage>(handler, order, logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -100,7 +100,7 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                return _subscriber.Subscribe<AnonMessage>(handler, order);
+                return _subscriber.Subscribe<AnonMessage>(handler, order, logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -120,7 +120,7 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                _subscriber.Subscribe<AnonMessage>(handler, unsubscribeToken, order);
+                _subscriber.Subscribe<AnonMessage>(handler, unsubscribeToken, order, logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -140,7 +140,7 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                _subscriber.Subscribe<AnonMessage>(handler, unsubscribeToken, order);
+                _subscriber.Subscribe<AnonMessage>(handler, unsubscribeToken, order, logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -160,7 +160,7 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                _subscriber.Subscribe<AnonMessage>(handler, unsubscribeToken, order);
+                _subscriber.Subscribe<AnonMessage>(handler, unsubscribeToken, order, logger);
             }
 
 #if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
