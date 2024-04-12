@@ -20,5 +20,13 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString()
             => nameof(GlobalScope);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator ==(GlobalScope _, GlobalScope __)
+            => true;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool operator !=(GlobalScope _, GlobalScope __)
+            => false;
     }
 }
