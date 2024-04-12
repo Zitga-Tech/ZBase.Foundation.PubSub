@@ -32,6 +32,13 @@ namespace ZBase.Foundation.PubSub
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Subscriber<TScope> Scope<TScope>()
+            where TScope : struct
+        {
+            return new(this, default);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Subscriber<TScope> Scope<TScope>(TScope scope)
         {
             return new(this, scope);
