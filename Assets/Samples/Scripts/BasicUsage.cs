@@ -18,6 +18,9 @@ namespace ZBase.Foundation.PubSub.Samples
         [SerializeField]
         private Button _unsubscribeButton;
 
+        [SerializeField]
+        private TMPro.TMP_Text _deltaTimeText;
+
         private readonly Messenger _messenger = new();
         private readonly List<ISubscription> _subscriptions = new();
         private CancellationTokenSource _cts;
@@ -53,7 +56,7 @@ namespace ZBase.Foundation.PubSub.Samples
             sub.Subscribe<TimeMessage>(TimeHandlerAsync).AddTo(subscriptions);
             sub.Subscribe<CancellableTimeMessage>(CancellableTimeHandlerAsync).AddTo(subscriptions);
             sub.Subscribe<FrameMessage>(FrameHandlerAsync).AddTo(subscriptions);
-            sub.Subscribe<DeltaTimeMessage>(DeltaTimeHandler).AddTo(subscriptions);
+            sub.Subscribe<BasicUsage, DeltaTimeMessage>(this, static (x, msg) => x.SetDeltaTimeText(msg)).AddTo(subscriptions);
 
             Debug.Log("System has subscribed to all messages.");
         }
@@ -187,9 +190,11 @@ namespace ZBase.Foundation.PubSub.Samples
             Debug.Log($"{msg.GetType().Name}: {NAME}: done");
         }
 
-        private static void DeltaTimeHandler(DeltaTimeMessage msg)
+        private void SetDeltaTimeText(DeltaTimeMessage msg)
         {
             Debug.Log($"{msg.GetType().Name}: {msg.value}");
+
+            _deltaTimeText.text = $"DT = {msg.value}";
         }
 
         private static async UniTaskVoid RunPublishAsync(Messenger messenger)

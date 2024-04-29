@@ -6,219 +6,228 @@ using Cysharp.Threading.Tasks;
 
 namespace ZBase.Foundation.PubSub
 {
-    /// <summary>
-    /// Message Subscriber in the <see cref="GlobalScope"/>
-    /// </summary>
-    public static partial class MessageSubscriberGlobal
+    static partial class MessageSubscriberGlobal
     {
         /// <summary>
-        /// Remove empty handler groups in the <see cref="GlobalScope"/> to optimize performance.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Compress<TMessage>(this MessageSubscriber self)
-#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
-            where TMessage : IMessage
-#endif
-        {
-            self.Global().Compress<TMessage>();
-        }
-
-        /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ISubscription Subscribe<TMessage>(
+        public static ISubscription Subscribe<TState, TMessage>(
               this MessageSubscriber self
-            , [NotNull] Action handler
+            , [NotNull] TState state
+            , [NotNull] Action<TState> handler
             , int order = 0
         )
+            where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
             where TMessage : IMessage
 #endif
         {
-            return self.Global().Subscribe<TMessage>(handler, order);
+            return self.Global().Subscribe<TState, TMessage>(state, handler, order);
         }
 
         /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ISubscription Subscribe<TMessage>(
+        public static ISubscription Subscribe<TState, TMessage>(
               this MessageSubscriber self
-            , [NotNull] Action<TMessage> handler
+            , [NotNull] TState state
+            , [NotNull] Action<TState, TMessage> handler
             , int order = 0
         )
+            where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
             where TMessage : IMessage
 #endif
         {
-            return self.Global().Subscribe<TMessage>(handler, order);
+            return self.Global().Subscribe<TState, TMessage>(state, handler, order);
         }
 
         /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ISubscription Subscribe<TMessage>(
+        public static ISubscription Subscribe<TState, TMessage>(
               this MessageSubscriber self
-            , [NotNull] Func<CancellationToken, UniTask> handler
+            , [NotNull] TState state
+            , [NotNull] Func<TState, CancellationToken, UniTask> handler
             , int order = 0
         )
+            where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
             where TMessage : IMessage
 #endif
         {
-            return self.Global().Subscribe<TMessage>(handler, order);
+            return self.Global().Subscribe<TState, TMessage>(state, handler, order);
         }
 
         /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ISubscription Subscribe<TMessage>(
+        public static ISubscription Subscribe<TState, TMessage>(
               this MessageSubscriber self
-            , [NotNull] MessageHandler<TMessage> handler
+            , [NotNull] TState state
+            , [NotNull] MessageHandler<TState, TMessage> handler
             , int order = 0
         )
+            where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
             where TMessage : IMessage
 #endif
         {
-            return self.Global().Subscribe<TMessage>(handler, order);
+            return self.Global().Subscribe<TState, TMessage>(state, handler, order);
         }
 
         /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ISubscription Subscribe<TMessage>(
+        public static ISubscription Subscribe<TState, TMessage>(
               this MessageSubscriber self
-            , [NotNull] Func<TMessage, UniTask> handler
+            , [NotNull] TState state
+            , [NotNull] Func<TState, TMessage, UniTask> handler
             , int order = 0
         )
+            where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
             where TMessage : IMessage
 #endif
         {
-            return self.Global().Subscribe<TMessage>(handler, order);
+            return self.Global().Subscribe<TState, TMessage>(state, handler, order);
         }
 
         /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ISubscription Subscribe<TMessage>(
+        public static ISubscription Subscribe<TState, TMessage>(
               this MessageSubscriber self
-            , [NotNull] Func<UniTask> handler
+            , [NotNull] TState state
+            , [NotNull] Func<TState, UniTask> handler
             , int order = 0
         )
+            where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
             where TMessage : IMessage
 #endif
         {
-            return self.Global().Subscribe<TMessage>(handler, order);
+            return self.Global().Subscribe<TState, TMessage>(state, handler, order);
         }
 
         /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Subscribe<TMessage>(
+        public static void Subscribe<TState, TMessage>(
               this MessageSubscriber self
-            , [NotNull] Action handler
+            , [NotNull] TState state
+            , [NotNull] Action<TState> handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )
+            where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
             where TMessage : IMessage
 #endif
         {
-            self.Global().Subscribe<TMessage>(handler, unsubscribeToken, order);
+            self.Global().Subscribe<TState, TMessage>(state, handler, unsubscribeToken, order);
         }
 
         /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Subscribe<TMessage>(
+        public static void Subscribe<TState, TMessage>(
               this MessageSubscriber self
-            , [NotNull] Action<TMessage> handler
+            , [NotNull] TState state
+            , [NotNull] Action<TState, TMessage> handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )
+            where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
             where TMessage : IMessage
 #endif
         {
-            self.Global().Subscribe<TMessage>(handler, unsubscribeToken, order);
+            self.Global().Subscribe<TState, TMessage>(state, handler, unsubscribeToken, order);
         }
 
         /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Subscribe<TMessage>(
+        public static void Subscribe<TState, TMessage>(
               this MessageSubscriber self
-            , [NotNull] Func<CancellationToken, UniTask> handler
+            , [NotNull] TState state
+            , [NotNull] Func<TState, CancellationToken, UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )
+            where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
             where TMessage : IMessage
 #endif
         {
-            self.Global().Subscribe<TMessage>(handler, unsubscribeToken, order);
+            self.Global().Subscribe<TState, TMessage>(state, handler, unsubscribeToken, order);
         }
 
         /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Subscribe<TMessage>(
+        public static void Subscribe<TState, TMessage>(
               this MessageSubscriber self
-            , [NotNull] MessageHandler<TMessage> handler
+            , [NotNull] TState state
+            , [NotNull] MessageHandler<TState, TMessage> handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )
+            where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
             where TMessage : IMessage
 #endif
         {
-            self.Global().Subscribe<TMessage>(handler, unsubscribeToken, order);
+            self.Global().Subscribe<TState, TMessage>(state, handler, unsubscribeToken, order);
         }
 
         /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Subscribe<TMessage>(
+        public static void Subscribe<TState, TMessage>(
               this MessageSubscriber self
-            , [NotNull] Func<TMessage, UniTask> handler
+            , [NotNull] TState state
+            , [NotNull] Func<TState, TMessage, UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )
+            where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
             where TMessage : IMessage
 #endif
         {
-            self.Global().Subscribe<TMessage>(handler, unsubscribeToken, order);
+            self.Global().Subscribe<TState, TMessage>(state, handler, unsubscribeToken, order);
         }
 
         /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Subscribe<TMessage>(
+        public static void Subscribe<TState, TMessage>(
               this MessageSubscriber self
-            , [NotNull] Func<UniTask> handler
+            , [NotNull] TState state
+            , [NotNull] Func<TState, UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )
+            where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
             where TMessage : IMessage
 #endif
         {
-            self.Global().Subscribe<TMessage>(handler, unsubscribeToken, order);
+            self.Global().Subscribe<TState, TMessage>(state, handler, unsubscribeToken, order);
         }
     }
 }

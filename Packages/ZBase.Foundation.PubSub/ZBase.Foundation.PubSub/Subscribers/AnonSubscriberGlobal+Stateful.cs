@@ -6,100 +6,99 @@ using Cysharp.Threading.Tasks;
 
 namespace ZBase.Foundation.PubSub
 {
-    /// <summary>
-    /// Anonymous Subscriber allows registering handlers that take no message argument
-    /// to the <see cref="GlobalScope"/>
-    /// </summary>
-    public static partial class AnonSubscriberGlobal
+    static partial class AnonSubscriberGlobal
     {
         /// <summary>
-        /// Remove empty handler groups in the <see cref="GlobalScope"/> to optimize performance.
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Compress(this AnonSubscriber self)
-        {
-            self.Global().Compress();
-        }
-
-        /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ISubscription Subscribe(
+        public static ISubscription Subscribe<TState>(
               this AnonSubscriber self
-            , [NotNull] Action handler
+            , [NotNull] TState state
+            , [NotNull] Action<TState> handler
             , int order = 0
         )
+            where TState : class
         {
-            return self.Global().Subscribe(handler, order);
+            return self.Global().Subscribe<TState>(state, handler, order);
         }
 
         /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ISubscription Subscribe(
+        public static ISubscription Subscribe<TState>(
               this AnonSubscriber self
-            , [NotNull] Func<CancellationToken, UniTask> handler
+            , [NotNull] TState state
+            , [NotNull] Func<TState, CancellationToken, UniTask> handler
             , int order = 0
         )
+            where TState : class
         {
-            return self.Global().Subscribe(handler, order);
+            return self.Global().Subscribe<TState>(state, handler, order);
         }
 
         /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ISubscription Subscribe(
+        public static ISubscription Subscribe<TState>(
               this AnonSubscriber self
-            , [NotNull] Func<UniTask> handler
+            , [NotNull] TState state
+            , [NotNull] Func<TState, UniTask> handler
             , int order = 0
         )
+            where TState : class
         {
-            return self.Global().Subscribe(handler, order);
+            return self.Global().Subscribe<TState>(state, handler, order);
         }
 
         /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Subscribe(
+        public static void Subscribe<TState>(
               this AnonSubscriber self
-            , [NotNull] Action handler
+            , [NotNull] TState state
+            , [NotNull] Action<TState> handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )
+            where TState : class
         {
-            self.Global().Subscribe(handler, unsubscribeToken, order);
+            self.Global().Subscribe<TState>(state, handler, unsubscribeToken, order);
         }
 
         /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Subscribe(
+        public static void Subscribe<TState>(
               this AnonSubscriber self
-            , [NotNull] Func<CancellationToken, UniTask> handler
+            , [NotNull] TState state
+            , [NotNull] Func<TState, CancellationToken, UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )
+            where TState : class
         {
-            self.Global().Subscribe(handler, unsubscribeToken, order);
+            self.Global().Subscribe<TState>(state, handler, unsubscribeToken, order);
         }
 
         /// <summary>
         /// Subscribes to the <see cref="GlobalScope"/>
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Subscribe(
+        public static void Subscribe<TState>(
               this AnonSubscriber self
-            , [NotNull] Func<UniTask> handler
+            , [NotNull] TState state
+            , [NotNull] Func<TState, UniTask> handler
             , CancellationToken unsubscribeToken
             , int order = 0
         )
+            where TState : class
         {
-            self.Global().Subscribe(handler, unsubscribeToken, order);
+            self.Global().Subscribe<TState>(state, handler, unsubscribeToken, order);
         }
     }
 }

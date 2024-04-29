@@ -24,6 +24,7 @@ namespace ZBase.Foundation.PubSub.Internals
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString()
             => $"{_delegate}+{_method}";
 
@@ -35,12 +36,15 @@ namespace ZBase.Foundation.PubSub.Internals
         public override bool Equals(object obj)
             => obj is HandlerId other && _delegate == other._delegate && _method == other._method;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
             => HashCode.Combine(_delegate, _method);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(HandlerId left, HandlerId right)
             => left._delegate == right._delegate && left._method == right._method;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(HandlerId left, HandlerId right)
             => left._delegate != right._delegate || left._method != right._method;
     }
