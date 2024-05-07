@@ -1,5 +1,7 @@
 ﻿#if !(UNITY_EDITOR || DEBUG) || DISABLE_ZBASE_PUBSUB_DEBUG
 #define __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#else
+#define __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
 #endif
 
 using System;
@@ -40,7 +42,7 @@ namespace ZBase.Foundation.PubSub.Internals
                 return;
             }
 
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
             try
 #endif
             {
@@ -56,7 +58,7 @@ namespace ZBase.Foundation.PubSub.Internals
                     await PublishAsync(handlers[i], message, cancelToken, TaskArrayPool, logger);
                 }
             }
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
             catch (Exception ex)
             {
                 logger?.LogException(ex);
@@ -82,7 +84,7 @@ namespace ZBase.Foundation.PubSub.Internals
 
                 var handlersList = ZCPG.ValueList<ZCPG.ValueArray<IHandler<TMessage>>>.Create(handlerMap.Count);
 
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 try
 #endif
                 {
@@ -99,7 +101,7 @@ namespace ZBase.Foundation.PubSub.Internals
                         handlersList.Add(ZCPG.ValueArray<IHandler<TMessage>>.Create(handlerArray, length));
                     }
                 }
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 catch (Exception ex)
                 {
                     logger?.LogException(ex);
@@ -133,13 +135,13 @@ namespace ZBase.Foundation.PubSub.Internals
             
             for (var i = 0; i < length; i++)
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 try
 #endif
                 {
                     tasks[i] = items[i]?.Handle(message, cancelToken) ?? UniTask.CompletedTask;
                 }
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 catch (Exception ex)
                 {
                     tasks[i] = UniTask.CompletedTask;
@@ -148,13 +150,13 @@ namespace ZBase.Foundation.PubSub.Internals
 #endif
             }
             
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
             try
 #endif
             {
                 await UniTask.WhenAll(tasks);
             }
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
             catch (Exception ex)
             {
                 logger?.LogException(ex);
@@ -168,7 +170,7 @@ namespace ZBase.Foundation.PubSub.Internals
 
         public Subscription<TMessage> Subscribe(IHandler<TMessage> handler, int order)
         {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
             if (handler == null)
                 throw new ArgumentNullException(nameof(handler));
 #endif
@@ -271,7 +273,7 @@ namespace ZBase.Foundation.PubSub.Internals
                 var orderValueArray = ZCPG.ValueArray<int>.Create(orderArray, orderCount);
                 orderValueArray.GetUnsafe(out var orders, out orderCount);
 
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 try
 #endif
                 {
@@ -293,7 +295,7 @@ namespace ZBase.Foundation.PubSub.Internals
                         ordering.RemoveAt(i);
                     }
                 }
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 finally
 #endif
                 {

@@ -1,5 +1,7 @@
 ﻿#if !(UNITY_EDITOR || DEBUG) || DISABLE_ZBASE_PUBSUB_DEBUG
 #define __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#else
+#define __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
 #endif
 
 using System.Runtime.CompilerServices;
@@ -14,18 +16,18 @@ namespace ZBase.Foundation.PubSub
         /// <summary>
         /// Anonymous Publisher that allows invoking handlers that take no message argument
         /// </summary>
-        public readonly partial struct UnityPublisher<TScope> : IAnonPublisher<TScope>
+        public readonly partial struct UnityPublisher<TScope>
             where TScope : UnityEngine.Object
         {
-            private readonly MessagePublisher.UnityPublisher<TScope> _publisher;
-
-            public UnityObjectRef<TScope> Scope => _publisher.Scope;
+            internal readonly MessagePublisher.Publisher<UnityObjectRef<TScope>> _publisher;
 
             public bool IsValid => _publisher.IsValid;
 
+            public UnityObjectRef<TScope> Scope => _publisher.Scope;
+
             internal UnityPublisher(MessagePublisher.UnityPublisher<TScope> publisher)
             {
-                _publisher = publisher;
+                _publisher = publisher._publisher;
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -33,7 +35,7 @@ namespace ZBase.Foundation.PubSub
 #endif
             public CachedPublisher<AnonMessage> Cache(ILogger logger = null)
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return default;
@@ -51,7 +53,7 @@ namespace ZBase.Foundation.PubSub
                 , ILogger logger = null
             )
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
@@ -69,7 +71,7 @@ namespace ZBase.Foundation.PubSub
                 , ILogger logger = null
             )
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return UniTask.CompletedTask;
@@ -79,7 +81,7 @@ namespace ZBase.Foundation.PubSub
                 return _publisher.PublishAsync<AnonMessage>(default, cancelToken, logger);
             }
 
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
             private bool Validate(ILogger logger)
             {
                 if (IsValid == true)
@@ -93,10 +95,10 @@ namespace ZBase.Foundation.PubSub
 
                 return false;
             }
+#endif
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             partial void RetainUsings();
-#endif
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿#if !(UNITY_EDITOR || DEBUG) || DISABLE_ZBASE_PUBSUB_DEBUG
 #define __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#else
+#define __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
 #endif
 
 using Cysharp.Threading.Tasks;
@@ -45,7 +47,7 @@ namespace ZBase.Foundation.PubSub
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Subscriber<TScope> UnityScope<TScope>([NotNull] TScope scope)
+        public UnitySubscriber<TScope> UnityScope<TScope>([NotNull] TScope scope)
             where TScope : UnityEngine.Object
         {
             return new(_subscriber.UnityScope(scope));

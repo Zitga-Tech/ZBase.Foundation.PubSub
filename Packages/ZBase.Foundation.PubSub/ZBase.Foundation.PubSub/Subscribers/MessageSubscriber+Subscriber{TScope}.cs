@@ -1,8 +1,11 @@
 ﻿#if !(UNITY_EDITOR || DEBUG) || DISABLE_ZBASE_PUBSUB_DEBUG
 #define __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#else
+#define __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
 #endif
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -13,21 +16,23 @@ namespace ZBase.Foundation.PubSub
 {
     partial class MessageSubscriber
     {
-        public readonly partial struct UnitySubscriber<TScope> : IMessageSubscriber<TScope>
-            where TScope : UnityEngine.Object
+        public readonly partial struct Subscriber<TScope>
         {
-            private readonly Subscriber<UnityObjectRef<TScope>> _subscriber;
+            internal readonly MessageSubscriber _subscriber;
 
-            public UnityObjectRef<TScope> Scope => _subscriber.Scope;
+            public TScope Scope { get; }
 
-            public bool IsValid => _subscriber.IsValid;
+            public bool IsValid => _subscriber != null;
 
-            internal UnitySubscriber([NotNull] MessageSubscriber subscriber, [NotNull] TScope scope)
+            internal Subscriber([NotNull] MessageSubscriber subscriber, [NotNull] TScope scope)
             {
-                _subscriber = new(subscriber, scope);
+                _subscriber = subscriber;
+                Scope = scope;
             }
 
-            /// <inheritdoc/>
+            /// <summary>
+            /// Remove empty handler groups to optimize performance.
+            /// </summary>
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
@@ -36,14 +41,17 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
                 }
 #endif
 
-                _subscriber.Compress<TMessage>(logger);
+                if (_subscriber._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
+                {
+                    broker.Compress(Scope);
+                }
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -58,14 +66,9 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return Subscription<TMessage>.None;
-                }
-#endif
-
-                return _subscriber.Subscribe<TMessage>(handler, order, logger);
+                ThrowIfHandlerIsNull(handler);
+                TrySubscribe(new HandlerAction<TMessage>(handler), order, out var subscription, logger);
+                return subscription;
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -80,14 +83,9 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return Subscription<TMessage>.None;
-                }
-#endif
-
-                return _subscriber.Subscribe<TMessage>(handler, order, logger);
+                ThrowIfHandlerIsNull(handler);
+                TrySubscribe(new HandlerActionMessage<TMessage>(handler), order, out var subscription, logger);
+                return subscription;
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -102,14 +100,9 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return Subscription<TMessage>.None;
-                }
-#endif
-
-                return _subscriber.Subscribe<TMessage>(handler, order, logger);
+                ThrowIfHandlerIsNull(handler);
+                TrySubscribe(new HandlerFunc<TMessage>(handler), order, out var subscription, logger);
+                return subscription;
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -124,14 +117,9 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return Subscription<TMessage>.None;
-                }
-#endif
-
-                return _subscriber.Subscribe<TMessage>(handler, order, logger);
+                ThrowIfHandlerIsNull(handler);
+                TrySubscribe(new HandlerFuncMessage<TMessage>(handler), order, out var subscription, logger);
+                return subscription;
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -146,14 +134,9 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return Subscription<TMessage>.None;
-                }
-#endif
-
-                return _subscriber.Subscribe<TMessage>(handler, order, logger);
+                ThrowIfHandlerIsNull(handler);
+                TrySubscribe(new HandlerFuncCancelToken<TMessage>(handler), order, out var subscription, logger);
+                return subscription;
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -168,14 +151,9 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return Subscription<TMessage>.None;
-                }
-#endif
-
-                return _subscriber.Subscribe<TMessage>(handler, order, logger);
+                ThrowIfHandlerIsNull(handler);
+                TrySubscribe(new HandlerMessage<TMessage>(handler), order, out var subscription, logger);
+                return subscription;
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -191,14 +169,12 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return;
-                }
-#endif
+                ThrowIfHandlerIsNull(handler);
 
-                _subscriber.Subscribe<TMessage>(handler, unsubscribeToken, order, logger);
+                if (TrySubscribe(new HandlerAction<TMessage>(handler), order, out var subscription, logger))
+                {
+                    subscription.RegisterTo(unsubscribeToken);
+                }
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -214,14 +190,12 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return;
-                }
-#endif
+                ThrowIfHandlerIsNull(handler);
 
-                _subscriber.Subscribe<TMessage>(handler, unsubscribeToken, order, logger);
+                if (TrySubscribe(new HandlerActionMessage<TMessage>(handler), order, out var subscription, logger))
+                {
+                    subscription.RegisterTo(unsubscribeToken);
+                }
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -237,14 +211,12 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return;
-                }
-#endif
+                ThrowIfHandlerIsNull(handler);
 
-                _subscriber.Subscribe<TMessage>(handler, unsubscribeToken, order, logger);
+                if (TrySubscribe(new HandlerFunc<TMessage>(handler), order, out var subscription, logger))
+                {
+                    subscription.RegisterTo(unsubscribeToken);
+                }
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -260,14 +232,12 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return;
-                }
-#endif
+                ThrowIfHandlerIsNull(handler);
 
-                _subscriber.Subscribe<TMessage>(handler, unsubscribeToken, order, logger);
+                if (TrySubscribe(new HandlerFuncMessage<TMessage>(handler), order, out var subscription, logger))
+                {
+                    subscription.RegisterTo(unsubscribeToken);
+                }
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -283,14 +253,12 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return;
-                }
-#endif
+                ThrowIfHandlerIsNull(handler);
 
-                _subscriber.Subscribe<TMessage>(handler, unsubscribeToken, order, logger);
+                if (TrySubscribe(new HandlerFuncCancelToken<TMessage>(handler), order, out var subscription, logger))
+                {
+                    subscription.RegisterTo(unsubscribeToken);
+                }
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -306,34 +274,75 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+                ThrowIfHandlerIsNull(handler);
+
+                if (TrySubscribe(new HandlerMessage<TMessage>(handler), order, out var subscription, logger))
+                {
+                    subscription.RegisterTo(unsubscribeToken);
+                }
+            }
+
+            internal bool TrySubscribe<TMessage>(
+                  [NotNull] IHandler<TMessage> handler
+                , int order
+                , out Subscription<TMessage> subscription
+                , ILogger logger
+            )
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
-                    return;
+                    subscription = Subscription<TMessage>.None;
+                    return false;
                 }
 #endif
 
-                _subscriber.Subscribe<TMessage>(handler, unsubscribeToken, order, logger);
+                var taskArrayPool = _subscriber._taskArrayPool;
+                var brokers = _subscriber._brokers;
+
+                lock (brokers)
+                {
+                    if (brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker) == false)
+                    {
+                        broker = new MessageBroker<TScope, TMessage>();
+
+                        if (brokers.TryAdd(broker) == false)
+                        {
+                            broker?.Dispose();
+                            subscription = Subscription<TMessage>.None;
+                            return false;
+                        }
+                    }
+
+                    subscription = broker.Subscribe(Scope, handler, order, taskArrayPool);
+                    return true;
+                }
             }
 
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [Conditional("__ZBASE_FOUNDATION_PUBSUB_VALIDATION__"), DoesNotReturn]
+            private static void ThrowIfHandlerIsNull(Delegate handler)
+            {
+                if (handler == null) throw new ArgumentNullException(nameof(handler));
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
             private bool Validate(ILogger logger)
             {
-                if (IsValid == true)
+                if (_subscriber != null)
                 {
                     return true;
                 }
 
                 (logger ?? DefaultLogger.Default).LogError(
-                    $"{GetType().Name} must be retrieved via `{nameof(MessageSubscriber)}.{nameof(UnityScope)}` API"
+                    $"{GetType()} must be retrieved via `{nameof(MessageSubscriber)}.{nameof(MessageSubscriber.Scope)}` API"
                 );
 
                 return false;
             }
+#endif
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             partial void RetainUsings();
-#endif
         }
     }
 }

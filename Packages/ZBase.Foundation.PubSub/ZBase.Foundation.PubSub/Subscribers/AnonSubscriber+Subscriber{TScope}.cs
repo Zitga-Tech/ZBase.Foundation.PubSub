@@ -1,5 +1,7 @@
 ﻿#if !(UNITY_EDITOR || DEBUG) || DISABLE_ZBASE_PUBSUB_DEBUG
 #define __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#else
+#define __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
 #endif
 
 using System;
@@ -16,27 +18,28 @@ namespace ZBase.Foundation.PubSub
         /// <summary>
         /// Anonymous Subscriber allows registering handlers that take no message argument
         /// </summary>
-        public readonly partial struct UnitySubscriber<TScope> : IAnonSubscriber<TScope>
-            where TScope : UnityEngine.Object
+        public readonly partial struct Subscriber<TScope>
         {
-            private readonly MessageSubscriber.UnitySubscriber<TScope> _subscriber;
+            internal readonly MessageSubscriber.Subscriber<TScope> _subscriber;
 
-            public UnityObjectRef<TScope> Scope => _subscriber.Scope;
+            public TScope Scope => _subscriber.Scope;
 
             public bool IsValid => _subscriber.IsValid;
 
-            internal UnitySubscriber(MessageSubscriber.UnitySubscriber<TScope> subscriber)
+            internal Subscriber(MessageSubscriber.Subscriber<TScope> subscriber)
             {
                 _subscriber = subscriber;
             }
 
-            /// <inheritdoc/>
+            /// <summary>
+            /// Remove empty handler groups to optimize performance.
+            /// </summary>
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
             public void Compress(ILogger logger = null)
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
@@ -55,7 +58,7 @@ namespace ZBase.Foundation.PubSub
                 , ILogger logger = null
             )
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return Subscription<AnonMessage>.None;
@@ -74,7 +77,7 @@ namespace ZBase.Foundation.PubSub
                 , ILogger logger = null
             )
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return Subscription<AnonMessage>.None;
@@ -93,7 +96,7 @@ namespace ZBase.Foundation.PubSub
                 , ILogger logger = null
             )
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return Subscription<AnonMessage>.None;
@@ -113,7 +116,7 @@ namespace ZBase.Foundation.PubSub
                 , ILogger logger = null
             )
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
@@ -133,7 +136,7 @@ namespace ZBase.Foundation.PubSub
                 , ILogger logger = null
             )
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
@@ -153,7 +156,7 @@ namespace ZBase.Foundation.PubSub
                 , ILogger logger = null
             )
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
@@ -163,7 +166,7 @@ namespace ZBase.Foundation.PubSub
                 _subscriber.Subscribe<AnonMessage>(handler, unsubscribeToken, order, logger);
             }
 
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
             private bool Validate(ILogger logger)
             {
                 if (_subscriber.IsValid == true)
@@ -172,15 +175,15 @@ namespace ZBase.Foundation.PubSub
                 }
 
                 (logger ?? DefaultLogger.Default).LogError(
-                    $"{GetType().Name} must be retrieved via `{nameof(AnonSubscriber)}.{nameof(UnityScope)}` API"
+                    $"{GetType().Name} must be retrieved via `{nameof(AnonSubscriber)}.{nameof(AnonSubscriber.Scope)}` API"
                 );
 
                 return false;
             }
+#endif
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             partial void RetainUsings();
-#endif
         }
     }
 }

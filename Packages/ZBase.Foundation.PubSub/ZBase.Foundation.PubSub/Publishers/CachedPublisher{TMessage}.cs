@@ -1,5 +1,7 @@
 #if !(UNITY_EDITOR || DEBUG) || DISABLE_ZBASE_PUBSUB_DEBUG
 #define __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#else
+#define __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
 #endif
 
 using System;
@@ -17,7 +19,7 @@ namespace ZBase.Foundation.PubSub
         where TMessage : IMessage, new()
 #endif
     {
-        private MessageBroker<TMessage> _broker;
+        internal MessageBroker<TMessage> _broker;
 
         internal CachedPublisher(MessageBroker<TMessage> broker)
         {
@@ -38,14 +40,16 @@ namespace ZBase.Foundation.PubSub
             Publish(new TMessage(), cancelToken, logger);
         }
 
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         public readonly void Publish(
               TMessage message
             , CancellationToken cancelToken = default
             , ILogger logger = null
         )
         {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
             if (Validate() == false)
             {
                 return;
@@ -67,14 +71,16 @@ namespace ZBase.Foundation.PubSub
             return PublishAsync(new TMessage(), cancelToken, logger);
         }
 
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         public readonly UniTask PublishAsync(
               TMessage message
             , CancellationToken cancelToken = default
             , ILogger logger = null
         )
         {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
             if (Validate() == false)
             {
                 return UniTask.CompletedTask;
@@ -90,7 +96,7 @@ namespace ZBase.Foundation.PubSub
             return _broker.PublishAsync(message, cancelToken, logger ?? DefaultLogger.Default);
         }
 
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
         private readonly bool Validate()
         {
             if (_broker != null)

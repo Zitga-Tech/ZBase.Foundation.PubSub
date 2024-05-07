@@ -1,5 +1,7 @@
 #if !(UNITY_EDITOR || DEBUG) || DISABLE_ZBASE_PUBSUB_DEBUG
 #define __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#else
+#define __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
 #endif
 
 using System.Diagnostics.CodeAnalysis;
@@ -12,13 +14,13 @@ namespace ZBase.Foundation.PubSub
 {
     partial class MessagePublisher
     {
-        public readonly struct Publisher<TScope> : IMessagePublisher<TScope>
+        public readonly struct Publisher<TScope>
         {
-            private readonly MessagePublisher _publisher;
-
-            public TScope Scope { get; }
+            internal readonly MessagePublisher _publisher;
 
             public bool IsValid => _publisher != null;
+
+            public TScope Scope { get; }
 
             internal Publisher([NotNull] MessagePublisher publisher, [NotNull] TScope scope)
             {
@@ -33,7 +35,7 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage, new()
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return default;
@@ -56,7 +58,7 @@ namespace ZBase.Foundation.PubSub
 
                         if (brokers.TryAdd(scopedBroker) == false)
                         {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                             (logger ?? DefaultLogger.Default).LogError(
                                 $"Something went wrong when registering a new instance of {typeof(MessageBroker<TScope, TMessage>)}!"
                             );
@@ -86,6 +88,9 @@ namespace ZBase.Foundation.PubSub
                 Publish<TMessage>(new(), cancelToken, logger);
             }
 
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
             public void Publish<TMessage>(
                   TMessage message
                 , CancellationToken cancelToken = default
@@ -95,7 +100,7 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
@@ -118,7 +123,7 @@ namespace ZBase.Foundation.PubSub
                 {
                     broker.PublishAsync(Scope, message, cancelToken, logger ?? DefaultLogger.Default).Forget();
                 }
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 else
                 {
                     LogWarning<TMessage>(Scope, logger);
@@ -140,6 +145,9 @@ namespace ZBase.Foundation.PubSub
                 return PublishAsync<TMessage>(new(), cancelToken, logger);
             }
 
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
             public UniTask PublishAsync<TMessage>(
                   TMessage message
                 , CancellationToken cancelToken = default
@@ -149,7 +157,7 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return UniTask.CompletedTask;
@@ -173,7 +181,7 @@ namespace ZBase.Foundation.PubSub
                     return broker.PublishAsync(Scope, message, cancelToken, logger ?? DefaultLogger.Default);
                 }
 
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 else
                 {
                     LogWarning<TMessage>(Scope, logger);
@@ -183,7 +191,7 @@ namespace ZBase.Foundation.PubSub
                 return UniTask.CompletedTask;
             }
 
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
             private bool Validate(ILogger logger)
             {
                 if (_publisher != null)

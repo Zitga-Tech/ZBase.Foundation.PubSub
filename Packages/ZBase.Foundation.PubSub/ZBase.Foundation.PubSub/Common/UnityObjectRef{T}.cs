@@ -1,8 +1,11 @@
 #if !(UNITY_EDITOR || DEBUG) || DISABLE_ZBASE_PUBSUB_DEBUG
 #define __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#else
+#define __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
 #endif
 
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
@@ -27,15 +30,15 @@ namespace ZBase.Foundation.PubSub
             get => _created != 0;
         }
 
+        public int InstanceId
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _instanceId;
+        }
+
         public T ToObject()
         {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-            if (IsCreated == false)
-            {
-                throw new InvalidOperationException("UnityObjectRef must be created properly");
-            }
-#endif
-
+            ThrowIfNotCreated(IsCreated);
             return UnityEngine.Resources.InstanceIDToObject(_instanceId) as T;
         }
 
@@ -66,5 +69,14 @@ namespace ZBase.Foundation.PubSub
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(UnityObjectRef<T> left, UnityObjectRef<T> right)
             => left._created != right._created || left._instanceId != right._instanceId;
+
+        [Conditional("__ZBASE_FOUNDATION_PUBSUB_VALIDATION__"), DoesNotReturn]
+        private static void ThrowIfNotCreated(bool value)
+        {
+            if (value == false)
+            {
+                throw new InvalidOperationException("UnityObjectRef must be created properly");
+            }
+        }
     }
 }

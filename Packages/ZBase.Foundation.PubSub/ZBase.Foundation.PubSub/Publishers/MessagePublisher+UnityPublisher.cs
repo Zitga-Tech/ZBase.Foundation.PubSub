@@ -1,5 +1,7 @@
 #if !(UNITY_EDITOR || DEBUG) || DISABLE_ZBASE_PUBSUB_DEBUG
 #define __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#else
+#define __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
 #endif
 
 using System.Diagnostics.CodeAnalysis;
@@ -12,14 +14,14 @@ namespace ZBase.Foundation.PubSub
 {
     partial class MessagePublisher
     {
-        public readonly partial struct UnityPublisher<TScope> : IMessagePublisher<TScope>
+        public readonly partial struct UnityPublisher<TScope>
             where TScope : UnityEngine.Object
         {
-            private readonly Publisher<UnityObjectRef<TScope>> _publisher;
-
-            public UnityObjectRef<TScope> Scope => _publisher.Scope;
+            internal readonly Publisher<UnityObjectRef<TScope>> _publisher;
 
             public bool IsValid => _publisher.IsValid;
+
+            public UnityObjectRef<TScope> Scope => _publisher.Scope;
 
             internal UnityPublisher([NotNull] MessagePublisher publisher, [NotNull] TScope scope)
             {
@@ -36,7 +38,7 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage, new()
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return default;
@@ -59,7 +61,7 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage, new()
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
@@ -81,7 +83,7 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
@@ -104,7 +106,7 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage, new()
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return UniTask.CompletedTask;
@@ -126,7 +128,7 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return UniTask.CompletedTask;
@@ -136,7 +138,7 @@ namespace ZBase.Foundation.PubSub
                 return _publisher.PublishAsync(message, cancelToken, logger);
             }
 
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
             private bool Validate(ILogger logger)
             {
                 if (IsValid == true)
@@ -150,10 +152,10 @@ namespace ZBase.Foundation.PubSub
 
                 return false;
             }
+#endif
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             partial void RetainUsings();
-#endif
         }
     }
 }

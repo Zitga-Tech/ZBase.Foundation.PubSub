@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using UnityEngine;
 using ZBase.Foundation.PubSub.Internals;
 using ZCPG = ZBase.Collections.Pooled.Generic;
@@ -50,6 +53,21 @@ namespace ZBase.Foundation.PubSub
             {
                 handlers.Remove(id);
             }
+        }
+    }
+
+    internal static class SubscriptionExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void RegisterTo<TMessage>(
+              [NotNull] this Subscription<TMessage> subscription
+            , CancellationToken unsubscribeToken
+        )
+#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : IMessage
+#endif
+        {
+            unsubscribeToken.Register(static x => ((Subscription<TMessage>)x)?.Dispose(), subscription);
         }
     }
 }

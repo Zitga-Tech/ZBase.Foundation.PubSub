@@ -40,19 +40,19 @@ namespace ZBase.Foundation.PubSub.Samples
 
             _unsubcribeCts = new();
 
-            var sub = _messenger.MessageSubscriber;
+            var subscriber = _messenger.MessageSubscriber;
             var token = _unsubcribeCts.Token;
 
-            sub.Scope(new IdScope(5))
+            subscriber.Scope(new IdScope(5))
                .Subscribe<FooMessage>(FooHandler_In_IdScope, unsubscribeToken: token);
 
-            sub.Scope(new NameScope("Bar"))
+            subscriber.Scope(new NameScope("Bar"))
                .Subscribe<BarMessage>(BarHandler_In_NameScope, unsubscribeToken: token);
 
-            sub.Scope(new UnityObjectScope(this))
+            subscriber.Scope(new UnityObjectScope(this))
                .Subscribe<FooMessage>(FooHandler_In_MonoBehaviourScope, unsubscribeToken: token);
 
-            sub.UnityScope(this.gameObject)
+            subscriber.UnityScope(this.gameObject)
                .Subscribe<FooMessage>(FooHandler_In_GameObjectScope, unsubscribeToken: token);
 
             Debug.Log("System has subscribed to all messages.");
@@ -73,16 +73,15 @@ namespace ZBase.Foundation.PubSub.Samples
 
             if (Input.GetKeyUp(KeyCode.Alpha1))
             {
-                pub.Scope(new IdScope(5)).Publish(new FooMessage { value = "[5] Fooooooo" });
+                pub.Scope(new IdScope(5))
+                    .Publish(new FooMessage { value = "[5] Fooooooo" });
                 return;
             }
 
             if (Input.GetKeyUp(KeyCode.Alpha2))
             {
-                /// Sometimes the user will forget to publish to the right specific scope
-                /// and they publish to the global scope instead.
-                /// This is a misuse of extension APIs.
-                pub.Publish(new BarMessage { value = UnityEngine.Random.Range(0, 100) });
+                pub.Scope(new NameScope("Bar"))
+                    .Publish(new BarMessage { value = UnityEngine.Random.Range(0, 100) });
                 return;
             }
 

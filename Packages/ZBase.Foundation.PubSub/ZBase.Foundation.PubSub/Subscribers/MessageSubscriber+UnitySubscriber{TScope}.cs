@@ -1,5 +1,7 @@
 ﻿#if !(UNITY_EDITOR || DEBUG) || DISABLE_ZBASE_PUBSUB_DEBUG
 #define __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#else
+#define __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
 #endif
 
 using System;
@@ -7,309 +9,335 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using ZBase.Foundation.PubSub.Internals;
 
 namespace ZBase.Foundation.PubSub
 {
     partial class MessageSubscriber
     {
-        partial struct UnitySubscriber<TScope>
+        public readonly partial struct UnitySubscriber<TScope>
+            where TScope : UnityEngine.Object
         {
-#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-            public ISubscription Subscribe<TState, TMessage>(
-                  [NotNull] TState state
-                , [NotNull] Action<TState> handler
-                , int order = 0
-                , ILogger logger = null
-            )
-                where TState : class
-#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
-                where TMessage : IMessage
-#endif
-            {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return Subscription<TMessage>.None;
-                }
-#endif
+            internal readonly Subscriber<UnityObjectRef<TScope>> _subscriber;
 
-                return _subscriber.Subscribe<TState, TMessage>(state, handler, order, logger);
+            public UnityObjectRef<TScope> Scope => _subscriber.Scope;
+
+            public bool IsValid => _subscriber.IsValid;
+
+            internal UnitySubscriber([NotNull] MessageSubscriber subscriber, [NotNull] TScope scope)
+            {
+                _subscriber = new(subscriber, scope);
             }
 
+            /// <summary>
+            /// Remove empty handler groups to optimize performance.
+            /// </summary>
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-            public ISubscription Subscribe<TState, TMessage>(
-                  [NotNull] TState state
-                , [NotNull] Action<TState, TMessage> handler
-                , int order = 0
-                , ILogger logger = null
-            )
-                where TState : class
+            public void Compress<TMessage>(ILogger logger = null)
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return Subscription<TMessage>.None;
-                }
-#endif
-
-                return _subscriber.Subscribe<TState, TMessage>(state, handler, order, logger);
-            }
-
-#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-            public ISubscription Subscribe<TState, TMessage>(
-                  [NotNull] TState state
-                , [NotNull] Func<TState, UniTask> handler
-                , int order = 0
-                , ILogger logger = null
-            )
-                where TState : class
-#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
-                where TMessage : IMessage
-#endif
-            {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return Subscription<TMessage>.None;
-                }
-#endif
-
-                return _subscriber.Subscribe<TState, TMessage>(state, handler, order, logger);
-            }
-
-#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-            public ISubscription Subscribe<TState, TMessage>(
-                  [NotNull] TState state
-                , [NotNull] Func<TState, TMessage, UniTask> handler
-                , int order = 0
-                , ILogger logger = null
-            )
-                where TState : class
-#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
-                where TMessage : IMessage
-#endif
-            {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return Subscription<TMessage>.None;
-                }
-#endif
-
-                return _subscriber.Subscribe<TState, TMessage>(state, handler, order, logger);
-            }
-
-#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-            public ISubscription Subscribe<TState, TMessage>(
-                  [NotNull] TState state
-                , [NotNull] Func<TState, CancellationToken, UniTask> handler
-                , int order = 0
-                , ILogger logger = null
-            )
-                where TState : class
-#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
-                where TMessage : IMessage
-#endif
-            {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return Subscription<TMessage>.None;
-                }
-#endif
-
-                return _subscriber.Subscribe<TState, TMessage>(state, handler, order, logger);
-            }
-
-#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-            public ISubscription Subscribe<TState, TMessage>(
-                  [NotNull] TState state
-                , [NotNull] MessageHandler<TState, TMessage> handler
-                , int order = 0
-                , ILogger logger = null
-            )
-                where TState : class
-#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
-                where TMessage : IMessage
-#endif
-            {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return Subscription<TMessage>.None;
-                }
-#endif
-
-                return _subscriber.Subscribe<TState, TMessage>(state, handler, order, logger);
-            }
-
-#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-            public void Subscribe<TState, TMessage>(
-                  [NotNull] TState state
-                , [NotNull] Action<TState> handler
-                , CancellationToken unsubscribeToken
-                , int order = 0
-                , ILogger logger = null
-            )
-                where TState : class
-#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
-                where TMessage : IMessage
-#endif
-            {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
                 }
 #endif
 
-                _subscriber.Subscribe<TState, TMessage>(state, handler, unsubscribeToken, order, logger);
+                _subscriber.Compress<TMessage>(logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-            public void Subscribe<TState, TMessage>(
-                  [NotNull] TState state
-                , [NotNull] Action<TState, TMessage> handler
-                , CancellationToken unsubscribeToken
+            public ISubscription Subscribe<TMessage>(
+                  [NotNull] Action handler
                 , int order = 0
                 , ILogger logger = null
             )
-                where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return Subscription<TMessage>.None;
+                }
+#endif
+
+                return _subscriber.Subscribe<TMessage>(handler, order, logger);
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public ISubscription Subscribe<TMessage>(
+                  [NotNull] Action<TMessage> handler
+                , int order = 0
+                , ILogger logger = null
+            )
+#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : IMessage
+#endif
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return Subscription<TMessage>.None;
+                }
+#endif
+
+                return _subscriber.Subscribe<TMessage>(handler, order, logger);
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public ISubscription Subscribe<TMessage>(
+                  [NotNull] Func<UniTask> handler
+                , int order = 0
+                , ILogger logger = null
+            )
+#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : IMessage
+#endif
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return Subscription<TMessage>.None;
+                }
+#endif
+
+                return _subscriber.Subscribe<TMessage>(handler, order, logger);
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public ISubscription Subscribe<TMessage>(
+                  [NotNull] Func<TMessage, UniTask> handler
+                , int order = 0
+                , ILogger logger = null
+            )
+#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : IMessage
+#endif
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return Subscription<TMessage>.None;
+                }
+#endif
+
+                return _subscriber.Subscribe<TMessage>(handler, order, logger);
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public ISubscription Subscribe<TMessage>(
+                  [NotNull] Func<CancellationToken, UniTask> handler
+                , int order = 0
+                , ILogger logger = null
+            )
+#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : IMessage
+#endif
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return Subscription<TMessage>.None;
+                }
+#endif
+
+                return _subscriber.Subscribe<TMessage>(handler, order, logger);
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public ISubscription Subscribe<TMessage>(
+                  [NotNull] MessageHandler<TMessage> handler
+                , int order = 0
+                , ILogger logger = null
+            )
+#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : IMessage
+#endif
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return Subscription<TMessage>.None;
+                }
+#endif
+
+                return _subscriber.Subscribe<TMessage>(handler, order, logger);
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public void Subscribe<TMessage>(
+                  [NotNull] Action handler
+                , CancellationToken unsubscribeToken
+                , int order = 0
+                , ILogger logger = null
+            )
+#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : IMessage
+#endif
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
                 }
 #endif
 
-                _subscriber.Subscribe<TState, TMessage>(state, handler, unsubscribeToken, order, logger);
+                _subscriber.Subscribe<TMessage>(handler, unsubscribeToken, order, logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-            public void Subscribe<TState, TMessage>(
-                  [NotNull] TState state
-                , [NotNull] Func<TState, UniTask> handler
+            public void Subscribe<TMessage>(
+                  [NotNull] Action<TMessage> handler
                 , CancellationToken unsubscribeToken
                 , int order = 0
                 , ILogger logger = null
             )
-                where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
                 }
 #endif
 
-                _subscriber.Subscribe<TState, TMessage>(state, handler, unsubscribeToken, order, logger);
+                _subscriber.Subscribe<TMessage>(handler, unsubscribeToken, order, logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-            public void Subscribe<TState, TMessage>(
-                  [NotNull] TState state
-                , [NotNull] Func<TState, TMessage, UniTask> handler
+            public void Subscribe<TMessage>(
+                  [NotNull] Func<UniTask> handler
                 , CancellationToken unsubscribeToken
                 , int order = 0
                 , ILogger logger = null
             )
-                where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
                 }
 #endif
 
-                _subscriber.Subscribe<TState, TMessage>(state, handler, unsubscribeToken, order, logger);
+                _subscriber.Subscribe<TMessage>(handler, unsubscribeToken, order, logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-            public void Subscribe<TState, TMessage>(
-                  [NotNull] TState state
-                , [NotNull] Func<TState, CancellationToken, UniTask> handler
+            public void Subscribe<TMessage>(
+                  [NotNull] Func<TMessage, UniTask> handler
                 , CancellationToken unsubscribeToken
                 , int order = 0
                 , ILogger logger = null
             )
-                where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
                 }
 #endif
 
-                _subscriber.Subscribe<TState, TMessage>(state, handler, unsubscribeToken, order, logger);
+                _subscriber.Subscribe<TMessage>(handler, unsubscribeToken, order, logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
-            public void Subscribe<TState, TMessage>(
-                  [NotNull] TState state
-                , [NotNull] MessageHandler<TState, TMessage> handler
+            public void Subscribe<TMessage>(
+                  [NotNull] Func<CancellationToken, UniTask> handler
                 , CancellationToken unsubscribeToken
                 , int order = 0
                 , ILogger logger = null
             )
-                where TState : class
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
                 where TMessage : IMessage
 #endif
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
                 }
 #endif
 
-                _subscriber.Subscribe<TState, TMessage>(state, handler, unsubscribeToken, order, logger);
+                _subscriber.Subscribe<TMessage>(handler, unsubscribeToken, order, logger);
             }
 
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            partial void StatefulRetainUsings();
+#endif
+            public void Subscribe<TMessage>(
+                  [NotNull] MessageHandler<TMessage> handler
+                , CancellationToken unsubscribeToken
+                , int order = 0
+                , ILogger logger = null
+            )
+#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : IMessage
+#endif
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return;
+                }
+#endif
+
+                _subscriber.Subscribe<TMessage>(handler, unsubscribeToken, order, logger);
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+            private bool Validate(ILogger logger)
+            {
+                if (IsValid == true)
+                {
+                    return true;
+                }
+
+                (logger ?? DefaultLogger.Default).LogError(
+                    $"{GetType().Name} must be retrieved via `{nameof(MessageSubscriber)}.{nameof(UnityScope)}` API"
+                );
+
+                return false;
+            }
+#endif
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            partial void RetainUsings();
         }
     }
 }

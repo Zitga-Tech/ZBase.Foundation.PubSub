@@ -1,5 +1,7 @@
 ﻿#if !(UNITY_EDITOR || DEBUG) || DISABLE_ZBASE_PUBSUB_DEBUG
 #define __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#else
+#define __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
 #endif
 
 using System;
@@ -16,26 +18,29 @@ namespace ZBase.Foundation.PubSub
         /// <summary>
         /// Anonymous Subscriber allows registering handlers that take no message argument
         /// </summary>
-        public readonly partial struct Subscriber<TScope> : IAnonSubscriber<TScope>
+        public readonly partial struct UnitySubscriber<TScope>
+            where TScope : UnityEngine.Object
         {
-            private readonly MessageSubscriber.Subscriber<TScope> _subscriber;
+            internal readonly MessageSubscriber.Subscriber<UnityObjectRef<TScope>> _subscriber;
 
-            public TScope Scope => _subscriber.Scope;
+            public UnityObjectRef<TScope> Scope => _subscriber.Scope;
 
             public bool IsValid => _subscriber.IsValid;
 
-            internal Subscriber(MessageSubscriber.Subscriber<TScope> subscriber)
+            internal UnitySubscriber(MessageSubscriber.UnitySubscriber<TScope> subscriber)
             {
-                _subscriber = subscriber;
+                _subscriber = subscriber._subscriber;
             }
 
-            /// <inheritdoc/>
+            /// <summary>
+            /// Remove empty handler groups to optimize performance.
+            /// </summary>
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
             public void Compress(ILogger logger = null)
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
@@ -54,26 +59,7 @@ namespace ZBase.Foundation.PubSub
                 , ILogger logger = null
             )
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return Subscription<AnonMessage>.None;
-                }
-#endif
-
-                return _subscriber.Subscribe<AnonMessage>(handler, order, logger);
-            }
-
-#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-            public ISubscription Subscribe(
-                  [NotNull] Func<CancellationToken, UniTask> handler
-                , int order = 0
-                , ILogger logger = null
-            )
-            {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return Subscription<AnonMessage>.None;
@@ -92,7 +78,26 @@ namespace ZBase.Foundation.PubSub
                 , ILogger logger = null
             )
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return Subscription<AnonMessage>.None;
+                }
+#endif
+
+                return _subscriber.Subscribe<AnonMessage>(handler, order, logger);
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public ISubscription Subscribe(
+                  [NotNull] Func<CancellationToken, UniTask> handler
+                , int order = 0
+                , ILogger logger = null
+            )
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return Subscription<AnonMessage>.None;
@@ -112,27 +117,7 @@ namespace ZBase.Foundation.PubSub
                 , ILogger logger = null
             )
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                if (Validate(logger) == false)
-                {
-                    return;
-                }
-#endif
-
-                _subscriber.Subscribe<AnonMessage>(handler, unsubscribeToken, order, logger);
-            }
-
-#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-            public void Subscribe(
-                  [NotNull] Func<CancellationToken, UniTask> handler
-                , CancellationToken unsubscribeToken
-                , int order = 0
-                , ILogger logger = null
-            )
-            {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
@@ -152,7 +137,7 @@ namespace ZBase.Foundation.PubSub
                 , ILogger logger = null
             )
             {
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
                     return;
@@ -162,24 +147,44 @@ namespace ZBase.Foundation.PubSub
                 _subscriber.Subscribe<AnonMessage>(handler, unsubscribeToken, order, logger);
             }
 
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public void Subscribe(
+                  [NotNull] Func<CancellationToken, UniTask> handler
+                , CancellationToken unsubscribeToken
+                , int order = 0
+                , ILogger logger = null
+            )
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return;
+                }
+#endif
+
+                _subscriber.Subscribe<AnonMessage>(handler, unsubscribeToken, order, logger);
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
             private bool Validate(ILogger logger)
             {
-                if (_subscriber.IsValid == true)
+                if (IsValid == true)
                 {
                     return true;
                 }
 
                 (logger ?? DefaultLogger.Default).LogError(
-                    $"{GetType().Name} must be retrieved via `{nameof(AnonSubscriber)}.{nameof(AnonSubscriber.Scope)}` API"
+                    $"{GetType().Name} must be retrieved via `{nameof(AnonSubscriber)}.{nameof(UnityScope)}` API"
                 );
 
                 return false;
             }
+#endif
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             partial void RetainUsings();
-#endif
         }
     }
 }

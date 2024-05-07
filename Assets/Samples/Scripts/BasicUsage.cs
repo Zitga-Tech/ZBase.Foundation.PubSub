@@ -49,14 +49,16 @@ namespace ZBase.Foundation.PubSub.Samples
                 return;
             }
 
-            var sub = _messenger.MessageSubscriber;
+            var subscriber = _messenger.MessageSubscriber.Global();
 
-            sub.Subscribe<FooMessage>(FooHandler).AddTo(subscriptions);
-            sub.Subscribe<BarMessage>(BarHandler).AddTo(subscriptions);
-            sub.Subscribe<TimeMessage>(TimeHandlerAsync).AddTo(subscriptions);
-            sub.Subscribe<CancellableTimeMessage>(CancellableTimeHandlerAsync).AddTo(subscriptions);
-            sub.Subscribe<FrameMessage>(FrameHandlerAsync).AddTo(subscriptions);
-            sub.Subscribe<BasicUsage, DeltaTimeMessage>(this, static (x, msg) => x.SetDeltaTimeText(msg)).AddTo(subscriptions);
+            subscriber.Subscribe<FooMessage>(FooHandler).AddTo(subscriptions);
+            subscriber.Subscribe<BarMessage>(BarHandler).AddTo(subscriptions);
+            subscriber.Subscribe<TimeMessage>(TimeHandlerAsync).AddTo(subscriptions);
+            subscriber.Subscribe<CancellableTimeMessage>(CancellableTimeHandlerAsync).AddTo(subscriptions);
+            subscriber.Subscribe<FrameMessage>(FrameHandlerAsync).AddTo(subscriptions);
+
+            var stateSubscriber = subscriber.WithState(this);
+            stateSubscriber.Subscribe<DeltaTimeMessage>(static (x, msg) => x.SetDeltaTimeText(msg)).AddTo(subscriptions);
 
             Debug.Log("System has subscribed to all messages.");
         }
@@ -91,7 +93,7 @@ namespace ZBase.Foundation.PubSub.Samples
 
         private void Update()
         {
-            var pub = _messenger.MessagePublisher;
+            var pub = _messenger.MessagePublisher.Global();
 
             if (Input.GetKeyUp(KeyCode.Alpha1))
             {

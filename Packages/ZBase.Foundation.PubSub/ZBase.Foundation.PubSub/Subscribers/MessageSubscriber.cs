@@ -40,7 +40,7 @@ namespace ZBase.Foundation.PubSub
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Subscriber<TScope> UnityScope<TScope>([NotNull] TScope scope)
+        public UnitySubscriber<TScope> UnityScope<TScope>([NotNull] TScope scope)
             where TScope : UnityEngine.Object
         {
             return new(this, scope);
