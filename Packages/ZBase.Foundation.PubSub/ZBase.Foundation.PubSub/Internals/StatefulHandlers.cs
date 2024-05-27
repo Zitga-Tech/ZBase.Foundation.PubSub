@@ -14,7 +14,7 @@ namespace ZBase.Foundation.PubSub.Internals
         {
             _state = new(state ?? throw new ArgumentNullException(nameof(state)));
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-            _id = new(handler);
+            _id = new(handler, state.GetHashCode());
         }
 
         public HandlerId Id => _id;
@@ -45,7 +45,7 @@ namespace ZBase.Foundation.PubSub.Internals
         {
             _state = new(state ?? throw new ArgumentNullException(nameof(state)));
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-            _id = new(handler);
+            _id = new(handler, state.GetHashCode());
         }
 
         public HandlerId Id => _id;
@@ -76,7 +76,7 @@ namespace ZBase.Foundation.PubSub.Internals
         {
             _state = new(state ?? throw new ArgumentNullException(nameof(state)));
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-            _id = new(handler);
+            _id = new(handler, state.GetHashCode());
         }
 
         public HandlerId Id => _id;
@@ -107,7 +107,7 @@ namespace ZBase.Foundation.PubSub.Internals
         {
             _state = new(state ?? throw new ArgumentNullException(nameof(state)));
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-            _id = new(handler);
+            _id = new(handler, state.GetHashCode());
         }
 
         public HandlerId Id => _id;
@@ -138,7 +138,7 @@ namespace ZBase.Foundation.PubSub.Internals
         {
             _state = new(state ?? throw new ArgumentNullException(nameof(state)));
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-            _id = new(handler);
+            _id = new(handler, state.GetHashCode());
         }
 
         public HandlerId Id => _id;
@@ -170,7 +170,7 @@ namespace ZBase.Foundation.PubSub.Internals
         {
             _state = new(state ?? throw new ArgumentNullException(nameof(state)));
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
-            _id = new(handler);
+            _id = new(handler, state.GetHashCode());
         }
 
         public HandlerId Id => _id;

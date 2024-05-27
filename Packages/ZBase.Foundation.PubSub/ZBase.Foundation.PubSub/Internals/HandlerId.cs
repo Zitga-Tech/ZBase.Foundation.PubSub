@@ -9,8 +9,9 @@ namespace ZBase.Foundation.PubSub.Internals
 
         private readonly IntPtr _method;
         private readonly int _delegate;
+        private readonly int _stateHash;
 
-        public HandlerId(Delegate @delegate) : this()
+        public HandlerId(Delegate @delegate, int stateHash = 0) : this()
         {
             if (@delegate == null)
             {
@@ -22,30 +23,32 @@ namespace ZBase.Foundation.PubSub.Internals
                 _method = @delegate.Method.MethodHandle.Value;
                 _delegate = @delegate.GetHashCode();
             }
+
+            _stateHash = stateHash;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString()
-            => $"{_delegate}+{_method}";
+            => $"{_delegate}+{_method}+{_stateHash}";
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(HandlerId other)
-            => _delegate == other._delegate && _method == other._method;
+            => _delegate == other._delegate && _method == other._method && _stateHash == other._stateHash;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object obj)
-            => obj is HandlerId other && _delegate == other._delegate && _method == other._method;
+            => obj is HandlerId other && _delegate == other._delegate && _method == other._method && _stateHash == other._stateHash;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
-            => HashCode.Combine(_delegate, _method);
+            => HashCode.Combine(_delegate, _method, _stateHash);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(HandlerId left, HandlerId right)
-            => left._delegate == right._delegate && left._method == right._method;
+            => left._delegate == right._delegate && left._method == right._method && left._stateHash == right._stateHash;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(HandlerId left, HandlerId right)
-            => left._delegate != right._delegate || left._method != right._method;
+            => left._delegate != right._delegate || left._method != right._method || left._stateHash != right._stateHash;
     }
 }
