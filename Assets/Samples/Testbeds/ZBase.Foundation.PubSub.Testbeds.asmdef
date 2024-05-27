@@ -1,0 +1,19 @@
+{
+    "name": "ZBase.Foundation.PubSub.Testbeds",
+    "rootNamespace": "ZBase.Foundation.PubSub.Testbeds",
+    "references": [
+        "Unity.TextMeshPro",
+        "UniTask",
+        "ZBase.Foundation",
+        "ZBase.Foundation.PubSub"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
