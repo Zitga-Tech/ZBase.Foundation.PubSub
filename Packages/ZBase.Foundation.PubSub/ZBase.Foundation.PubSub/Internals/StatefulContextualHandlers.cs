@@ -4,13 +4,13 @@ using Cysharp.Threading.Tasks;
 
 namespace ZBase.Foundation.PubSub.Internals
 {
-    internal sealed class StatefulHandlerFuncMessageToken<TState, TMessage> : IHandler<TMessage> where TState : class
+    internal sealed class StatefulContextualHandlerFuncMessageToken<TState, TMessage> : IHandler<TMessage> where TState : class
     {
         private readonly HandlerId _id;
         private readonly WeakReference<TState> _state;
-        private Func<TState, TMessage, CancellationToken, UniTask> _handler;
+        private Func<TState, TMessage, PublishingContext, CancellationToken, UniTask> _handler;
 
-        public StatefulHandlerFuncMessageToken(TState state, Func<TState, TMessage, CancellationToken, UniTask> handler)
+        public StatefulContextualHandlerFuncMessageToken(TState state, Func<TState, TMessage, PublishingContext, CancellationToken, UniTask> handler)
         {
             _state = new(state ?? throw new ArgumentNullException(nameof(state)));
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
@@ -31,17 +31,17 @@ namespace ZBase.Foundation.PubSub.Internals
                 return UniTask.CompletedTask;
             }
 
-            return _handler?.Invoke(state, message, token) ?? UniTask.CompletedTask;
+            return _handler?.Invoke(state, message, context, token) ?? UniTask.CompletedTask;
         }
     }
 
-    internal sealed class StatefulHandlerFuncToken<TState, TMessage> : IHandler<TMessage> where TState : class
+    internal sealed class StatefulContextualHandlerFuncToken<TState, TMessage> : IHandler<TMessage> where TState : class
     {
         private readonly HandlerId _id;
         private readonly WeakReference<TState> _state;
-        private Func<TState, CancellationToken, UniTask> _handler;
+        private Func<TState, PublishingContext, CancellationToken, UniTask> _handler;
 
-        public StatefulHandlerFuncToken(TState state, Func<TState, CancellationToken, UniTask> handler)
+        public StatefulContextualHandlerFuncToken(TState state, Func<TState, PublishingContext, CancellationToken, UniTask> handler)
         {
             _state = new(state ?? throw new ArgumentNullException(nameof(state)));
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
@@ -62,17 +62,17 @@ namespace ZBase.Foundation.PubSub.Internals
                 return UniTask.CompletedTask;
             }
 
-            return _handler?.Invoke(state, token) ?? UniTask.CompletedTask;
+            return _handler?.Invoke(state, context, token) ?? UniTask.CompletedTask;
         }
     }
 
-    internal sealed class StatefulHandlerFuncMessage<TState, TMessage> : IHandler<TMessage> where TState : class
+    internal sealed class StatefulContextualHandlerFuncMessage<TState, TMessage> : IHandler<TMessage> where TState : class
     {
         private readonly HandlerId _id;
         private readonly WeakReference<TState> _state;
-        private Func<TState, TMessage, UniTask> _handler;
+        private Func<TState, TMessage, PublishingContext, UniTask> _handler;
 
-        public StatefulHandlerFuncMessage(TState state, Func<TState, TMessage, UniTask> handler)
+        public StatefulContextualHandlerFuncMessage(TState state, Func<TState, TMessage, PublishingContext, UniTask> handler)
         {
             _state = new(state ?? throw new ArgumentNullException(nameof(state)));
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
@@ -93,17 +93,17 @@ namespace ZBase.Foundation.PubSub.Internals
                 return UniTask.CompletedTask;
             }
 
-            return _handler?.Invoke(state, message) ?? UniTask.CompletedTask;
+            return _handler?.Invoke(state, message, context) ?? UniTask.CompletedTask;
         }
     }
 
-    internal sealed class StatefulHandlerFunc<TState, TMessage> : IHandler<TMessage> where TState : class
+    internal sealed class StatefulContextualHandlerFunc<TState, TMessage> : IHandler<TMessage> where TState : class
     {
         private readonly HandlerId _id;
         private readonly WeakReference<TState> _state;
-        private Func<TState, UniTask> _handler;
+        private Func<TState, PublishingContext, UniTask> _handler;
 
-        public StatefulHandlerFunc(TState state, Func<TState, UniTask> handler)
+        public StatefulContextualHandlerFunc(TState state, Func<TState, PublishingContext, UniTask> handler)
         {
             _state = new(state ?? throw new ArgumentNullException(nameof(state)));
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
@@ -124,17 +124,17 @@ namespace ZBase.Foundation.PubSub.Internals
                 return UniTask.CompletedTask;
             }
 
-            return _handler?.Invoke(state) ?? UniTask.CompletedTask;
+            return _handler?.Invoke(state, context) ?? UniTask.CompletedTask;
         }
     }
 
-    internal sealed class StatefulHandlerActionMessage<TState, TMessage> : IHandler<TMessage> where TState : class
+    internal sealed class StatefulContextualHandlerActionMessage<TState, TMessage> : IHandler<TMessage> where TState : class
     {
         private readonly HandlerId _id;
         private readonly WeakReference<TState> _state;
-        private Action<TState, TMessage> _handler;
+        private Action<TState, TMessage, PublishingContext> _handler;
 
-        public StatefulHandlerActionMessage(TState state, Action<TState, TMessage> handler)
+        public StatefulContextualHandlerActionMessage(TState state, Action<TState, TMessage, PublishingContext> handler)
         {
             _state = new(state ?? throw new ArgumentNullException(nameof(state)));
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
@@ -155,18 +155,18 @@ namespace ZBase.Foundation.PubSub.Internals
                 return UniTask.CompletedTask;
             }
 
-            _handler?.Invoke(state, message);
+            _handler?.Invoke(state, message, context);
             return UniTask.CompletedTask;
         }
     }
 
-    internal sealed class StatefulHandlerAction<TState, TMessage> : IHandler<TMessage> where TState : class
+    internal sealed class StatefulContextualHandlerAction<TState, TMessage> : IHandler<TMessage> where TState : class
     {
         private readonly HandlerId _id;
         private readonly WeakReference<TState> _state;
-        private Action<TState> _handler;
+        private Action<TState, PublishingContext> _handler;
 
-        public StatefulHandlerAction(TState state, Action<TState> handler)
+        public StatefulContextualHandlerAction(TState state, Action<TState, PublishingContext> handler)
         {
             _state = new(state ?? throw new ArgumentNullException(nameof(state)));
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
@@ -187,7 +187,7 @@ namespace ZBase.Foundation.PubSub.Internals
                 return UniTask.CompletedTask;
             }
 
-            _handler?.Invoke(state);
+            _handler?.Invoke(state, context);
             return UniTask.CompletedTask;
         }
     }

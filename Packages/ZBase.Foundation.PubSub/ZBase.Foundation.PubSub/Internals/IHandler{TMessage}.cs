@@ -8,6 +8,6 @@ namespace ZBase.Foundation.PubSub.Internals
     {
         HandlerId Id { get; }
 
-        UniTask Handle(TMessage message, CancellationToken cancelToken);
+        UniTask Handle(TMessage message, PublishingContext context, CancellationToken token);
     }
 }

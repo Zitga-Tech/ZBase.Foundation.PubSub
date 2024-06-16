@@ -119,7 +119,7 @@ namespace ZBase.Foundation.PubSub
 
                 ThrowIfHandlerIsNull(handler);
 
-                _subscriber.TrySubscribe(new StatefulHandlerFuncCancelToken<TState, AnonMessage>(State, handler), order, out var subscription, logger);
+                _subscriber.TrySubscribe(new StatefulHandlerFuncToken<TState, AnonMessage>(State, handler), order, out var subscription, logger);
                 return subscription;
             }
 
@@ -183,7 +183,130 @@ namespace ZBase.Foundation.PubSub
 
                 ThrowIfHandlerIsNull(handler);
 
-                if (_subscriber.TrySubscribe(new StatefulHandlerFuncCancelToken<TState, AnonMessage>(State, handler), order, out var subscription, logger))
+                if (_subscriber.TrySubscribe(new StatefulHandlerFuncToken<TState, AnonMessage>(State, handler), order, out var subscription, logger))
+                {
+                    subscription.RegisterTo(unsubscribeToken);
+                }
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public ISubscription Subscribe(
+                  [NotNull] Action<TState, PublishingContext> handler
+                , int order = 0
+                , ILogger logger = null
+            )
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false) return Subscription<AnonMessage>.None;
+#endif
+
+                ThrowIfHandlerIsNull(handler);
+
+                _subscriber.TrySubscribe(new StatefulContextualHandlerAction<TState, AnonMessage>(State, handler), order, out var subscription, logger);
+                return subscription;
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public ISubscription Subscribe(
+                  [NotNull] Func<TState, PublishingContext, UniTask> handler
+                , int order = 0
+                , ILogger logger = null
+            )
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false) return Subscription<AnonMessage>.None;
+#endif
+
+                ThrowIfHandlerIsNull(handler);
+
+                _subscriber.TrySubscribe(new StatefulContextualHandlerFunc<TState, AnonMessage>(State, handler), order, out var subscription, logger);
+                return subscription;
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public ISubscription Subscribe(
+                  [NotNull] Func<TState, PublishingContext, CancellationToken, UniTask> handler
+                , int order = 0
+                , ILogger logger = null
+            )
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false) return Subscription<AnonMessage>.None;
+#endif
+
+                ThrowIfHandlerIsNull(handler);
+
+                _subscriber.TrySubscribe(new StatefulContextualHandlerFuncToken<TState, AnonMessage>(State, handler), order, out var subscription, logger);
+                return subscription;
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public void Subscribe(
+                  [NotNull] Action<TState, PublishingContext> handler
+                , CancellationToken unsubscribeToken
+                , int order = 0
+                , ILogger logger = null
+            )
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false) return;
+#endif
+
+                ThrowIfHandlerIsNull(handler);
+
+                if (_subscriber.TrySubscribe(new StatefulContextualHandlerAction<TState, AnonMessage>(State, handler), order, out var subscription, logger))
+                {
+                    subscription.RegisterTo(unsubscribeToken);
+                }
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public void Subscribe(
+                  [NotNull] Func<TState, PublishingContext, UniTask> handler
+                , CancellationToken unsubscribeToken
+                , int order = 0
+                , ILogger logger = null
+            )
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false) return;
+#endif
+
+                ThrowIfHandlerIsNull(handler);
+
+                if (_subscriber.TrySubscribe(new StatefulContextualHandlerFunc<TState, AnonMessage>(State, handler), order, out var subscription, logger))
+                {
+                    subscription.RegisterTo(unsubscribeToken);
+                }
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public void Subscribe(
+                  [NotNull] Func<TState, PublishingContext, CancellationToken, UniTask> handler
+                , CancellationToken unsubscribeToken
+                , int order = 0
+                , ILogger logger = null
+            )
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false) return;
+#endif
+
+                ThrowIfHandlerIsNull(handler);
+
+                if (_subscriber.TrySubscribe(new StatefulContextualHandlerFuncToken<TState, AnonMessage>(State, handler), order, out var subscription, logger))
                 {
                     subscription.RegisterTo(unsubscribeToken);
                 }

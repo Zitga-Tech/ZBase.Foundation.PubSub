@@ -40,12 +40,6 @@ namespace ZBase.Foundation.PubSub
                 {
                     return default;
                 }
-
-                if (Scope == null)
-                {
-                    (logger ?? DefaultLogger.Default).LogException(new System.NullReferenceException(nameof(Scope)));
-                    return default;
-                }
 #endif
 
                 var brokers = _publisher._brokers;
@@ -59,9 +53,7 @@ namespace ZBase.Foundation.PubSub
                         if (brokers.TryAdd(scopedBroker) == false)
                         {
 #if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
-                            (logger ?? DefaultLogger.Default).LogError(
-                                $"Something went wrong when registering a new instance of {typeof(MessageBroker<TScope, TMessage>)}!"
-                            );
+                            LogUnexpectedErrorWhenCache<TMessage>(logger);
 #endif
 
                             scopedBroker?.Dispose();
@@ -73,10 +65,12 @@ namespace ZBase.Foundation.PubSub
                     return new CachedPublisher<TMessage>(broker);
                 }
             }
-
+            
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
             public void Publish<TMessage>(
-                  CancellationToken cancelToken = default
+                  CancellationToken token = default
                 , ILogger logger = null
             )
 #if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -85,43 +79,16 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage, new()
 #endif
             {
-                Publish<TMessage>(new(), cancelToken, logger);
-            }
-
-#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-#endif
-            public void Publish<TMessage>(
-                  TMessage message
-                , CancellationToken cancelToken = default
-                , ILogger logger = null
-            )
-#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
-                where TMessage : IMessage
-#endif
-            {
 #if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 if (Validate(logger) == false)
                 {
-                    return;
-                }
-
-                if (Scope == null)
-                {
-                    (logger ?? DefaultLogger.Default).LogException(new System.NullReferenceException(nameof(Scope)));
-                    return;
-                }
-
-                if (message == null)
-                {
-                    (logger ?? DefaultLogger.Default).LogException(new System.ArgumentNullException(nameof(message)));
                     return;
                 }
 #endif
 
                 if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
                 {
-                    broker.PublishAsync(Scope, message, cancelToken, logger ?? DefaultLogger.Default).Forget();
+                    broker.PublishAsync(Scope, new TMessage(), default, token, logger ?? DefaultLogger.Default).Forget();
                 }
 #if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 else
@@ -131,9 +98,42 @@ namespace ZBase.Foundation.PubSub
 #endif
             }
 
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public void Publish<TMessage>(
+                  TMessage message
+                , CancellationToken token = default
+                , ILogger logger = null
+            )
+#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : IMessage
+#endif
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(message, logger) == false)
+                {
+                    return;
+                }
+#endif
+
+                if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
+                {
+                    broker.PublishAsync(Scope, message, default, token, logger ?? DefaultLogger.Default).Forget();
+                }
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                else
+                {
+                    LogWarning<TMessage>(Scope, logger);
+                }
+#endif
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
             public UniTask PublishAsync<TMessage>(
-                  CancellationToken cancelToken = default
+                  CancellationToken token = default
                 , ILogger logger = null
             )
 #if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -142,7 +142,26 @@ namespace ZBase.Foundation.PubSub
                 where TMessage : IMessage, new()
 #endif
             {
-                return PublishAsync<TMessage>(new(), cancelToken, logger);
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return UniTask.CompletedTask;
+                }
+#endif
+
+                if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
+                {
+                    return broker.PublishAsync(Scope, new TMessage(), default, token, logger ?? DefaultLogger.Default);
+                }
+
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                else
+                {
+                    LogWarning<TMessage>(Scope, logger);
+                }
+#endif
+
+                return UniTask.CompletedTask;
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -150,7 +169,7 @@ namespace ZBase.Foundation.PubSub
 #endif
             public UniTask PublishAsync<TMessage>(
                   TMessage message
-                , CancellationToken cancelToken = default
+                , CancellationToken token = default
                 , ILogger logger = null
             )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -158,27 +177,167 @@ namespace ZBase.Foundation.PubSub
 #endif
             {
 #if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
-                if (Validate(logger) == false)
+                if (Validate(message, logger) == false)
                 {
-                    return UniTask.CompletedTask;
-                }
-
-                if (Scope == null)
-                {
-                    (logger ?? DefaultLogger.Default).LogException(new System.NullReferenceException(nameof(Scope)));
-                    return UniTask.CompletedTask;
-                }
-
-                if (message == null)
-                {
-                    (logger ?? DefaultLogger.Default).LogException(new System.ArgumentNullException(nameof(message)));
                     return UniTask.CompletedTask;
                 }
 #endif
 
                 if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
                 {
-                    return broker.PublishAsync(Scope, message, cancelToken, logger ?? DefaultLogger.Default);
+                    return broker.PublishAsync(Scope, message, default, token, logger ?? DefaultLogger.Default);
+                }
+
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                else
+                {
+                    LogWarning<TMessage>(Scope, logger);
+                }
+#endif
+
+                return UniTask.CompletedTask;
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public void PublishWithContext<TMessage>(
+                  CancellationToken token = default
+                , ILogger logger = null
+                , [CallerLineNumber] int callerLineNumber = 0
+                , [CallerMemberName] string callerMemberName = ""
+                , [CallerFilePath] string callerFilePath = ""
+            )
+#if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : new()
+#else
+                where TMessage : IMessage, new()
+#endif
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return;
+                }
+#endif
+
+                if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
+                {
+                    var caller = new CallerInfo(callerLineNumber, callerMemberName, callerFilePath);
+                    var context = new PublishingContext(caller);
+                    broker.PublishAsync(Scope, new TMessage(), context, token, logger ?? DefaultLogger.Default).Forget();
+                }
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                else
+                {
+                    LogWarning<TMessage>(Scope, logger);
+                }
+#endif
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public void PublishWithContext<TMessage>(
+                  TMessage message
+                , CancellationToken token = default
+                , ILogger logger = null
+                , [CallerLineNumber] int callerLineNumber = 0
+                , [CallerMemberName] string callerMemberName = ""
+                , [CallerFilePath] string callerFilePath = ""
+            )
+#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : IMessage
+#endif
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(message, logger) == false)
+                {
+                    return;
+                }
+#endif
+
+                if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
+                {
+                    var caller = new CallerInfo(callerLineNumber, callerMemberName, callerFilePath);
+                    var context = new PublishingContext(caller);
+                    broker.PublishAsync(Scope, message, context, token, logger ?? DefaultLogger.Default).Forget();
+                }
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                else
+                {
+                    LogWarning<TMessage>(Scope, logger);
+                }
+#endif
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public UniTask PublishWithContextAsync<TMessage>(
+                  CancellationToken token = default
+                , ILogger logger = null
+                , [CallerLineNumber] int callerLineNumber = 0
+                , [CallerMemberName] string callerMemberName = ""
+                , [CallerFilePath] string callerFilePath = ""
+            )
+#if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : new()
+#else
+                where TMessage : IMessage, new()
+#endif
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return UniTask.CompletedTask;
+                }
+#endif
+
+                if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
+                {
+                    var caller = new CallerInfo(callerLineNumber, callerMemberName, callerFilePath);
+                    var context = new PublishingContext(caller);
+                    return broker.PublishAsync(Scope, new TMessage(), context, token, logger ?? DefaultLogger.Default);
+                }
+
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                else
+                {
+                    LogWarning<TMessage>(Scope, logger);
+                }
+#endif
+
+                return UniTask.CompletedTask;
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public UniTask PublishWithContextAsync<TMessage>(
+                  TMessage message
+                , CancellationToken token = default
+                , ILogger logger = null
+                , [CallerLineNumber] int callerLineNumber = 0
+                , [CallerMemberName] string callerMemberName = ""
+                , [CallerFilePath] string callerFilePath = ""
+            )
+#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : IMessage
+#endif
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(message, logger) == false)
+                {
+                    return UniTask.CompletedTask;
+                }
+#endif
+
+                if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
+                {
+                    var caller = new CallerInfo(callerLineNumber, callerMemberName, callerFilePath);
+                    var context = new PublishingContext(caller);
+                    return broker.PublishAsync(Scope, message, context, token, logger ?? DefaultLogger.Default);
                 }
 
 #if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
@@ -194,22 +353,61 @@ namespace ZBase.Foundation.PubSub
 #if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
             private bool Validate(ILogger logger)
             {
-                if (_publisher != null)
+                if (_publisher == null)
                 {
-                    return true;
+                    (logger ?? DefaultLogger.Default).LogError(
+                        $"{GetType()} must be retrieved via `{nameof(MessagePublisher)}.{nameof(MessagePublisher.Scope)}` API"
+                    );
+
+                    return false;
                 }
 
-                (logger ?? DefaultLogger.Default).LogError(
-                    $"{GetType()} must be retrieved via `{nameof(MessagePublisher)}.{nameof(MessagePublisher.Scope)}` API"
-                );
+                if (Scope == null)
+                {
+                    (logger ?? DefaultLogger.Default).LogException(new System.NullReferenceException(nameof(Scope)));
+                    return false;
+                }
 
-                return false;
+                return true;
+            }
+
+            private bool Validate<TMessage>(TMessage message, ILogger logger)
+            {
+                if (_publisher == null)
+                {
+                    (logger ?? DefaultLogger.Default).LogError(
+                        $"{GetType()} must be retrieved via `{nameof(MessagePublisher)}.{nameof(MessagePublisher.Scope)}` API"
+                    );
+
+                    return false;
+                }
+
+                if (Scope == null)
+                {
+                    (logger ?? DefaultLogger.Default).LogException(new System.NullReferenceException(nameof(Scope)));
+                    return false;
+                }
+
+                if (message == null)
+                {
+                    (logger ?? DefaultLogger.Default).LogException(new System.ArgumentNullException(nameof(message)));
+                    return false;
+                }
+
+                return true;
             }
 
             private static void LogWarning<TMessage>(TScope scope, ILogger logger)
             {
                 (logger ?? DefaultLogger.Default).LogWarning(
                     $"Found no subscription for `{typeof(TMessage)}` in scope `{scope}`"
+                );
+            }
+
+            private static void LogUnexpectedErrorWhenCache<TMessage>(ILogger logger)
+            {
+                (logger ?? DefaultLogger.Default).LogError(
+                    $"Something went wrong when registering a new instance of {typeof(MessageBroker<TScope, TMessage>)}!"
                 );
             }
 #endif

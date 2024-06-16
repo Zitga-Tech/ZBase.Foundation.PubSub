@@ -48,7 +48,7 @@ namespace ZBase.Foundation.PubSub
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
             public void Publish(
-                  CancellationToken cancelToken = default
+                  CancellationToken token = default
                 , ILogger logger = null
             )
             {
@@ -59,14 +59,14 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                _publisher.Publish<AnonMessage>(cancelToken, logger);
+                _publisher.Publish<AnonMessage>(token, logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
             public UniTask PublishAsync(
-                  CancellationToken cancelToken = default
+                  CancellationToken token = default
                 , ILogger logger = null
             )
             {
@@ -77,7 +77,49 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                return _publisher.PublishAsync<AnonMessage>(default, cancelToken, logger);
+                return _publisher.PublishAsync<AnonMessage>(default, token, logger);
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public void PublishWithContext(
+                  CancellationToken token = default
+                , ILogger logger = null
+                , [CallerLineNumber] int callerLineNumber = 0
+                , [CallerMemberName] string callerMemberName = ""
+                , [CallerFilePath] string callerFilePath = ""
+            )
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return;
+                }
+#endif
+
+                _publisher.PublishWithContext<AnonMessage>(token, logger, callerLineNumber, callerMemberName, callerFilePath);
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public UniTask PublishWithContextAsync(
+                  CancellationToken token = default
+                , ILogger logger = null
+                , [CallerLineNumber] int callerLineNumber = 0
+                , [CallerMemberName] string callerMemberName = ""
+                , [CallerFilePath] string callerFilePath = ""
+            )
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return UniTask.CompletedTask;
+                }
+#endif
+
+                return _publisher.PublishWithContextAsync<AnonMessage>(default, token, logger, callerLineNumber, callerMemberName, callerFilePath);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__

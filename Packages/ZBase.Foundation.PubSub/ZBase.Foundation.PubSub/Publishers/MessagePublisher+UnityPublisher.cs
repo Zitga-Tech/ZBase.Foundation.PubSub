@@ -52,7 +52,7 @@ namespace ZBase.Foundation.PubSub
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
             public void Publish<TMessage>(
-                  CancellationToken cancelToken = default
+                  CancellationToken token = default
                 , ILogger logger = null
             )
 #if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -68,7 +68,7 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                _publisher.Publish<TMessage>(cancelToken, logger);
+                _publisher.Publish<TMessage>(token, logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -76,7 +76,7 @@ namespace ZBase.Foundation.PubSub
 #endif
             public void Publish<TMessage>(
                   TMessage message
-                , CancellationToken cancelToken = default
+                , CancellationToken token = default
                 , ILogger logger = null
             )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -90,14 +90,14 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                _publisher.Publish(message, cancelToken, logger);
+                _publisher.Publish(message, token, logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
             public UniTask PublishAsync<TMessage>(
-                  CancellationToken cancelToken = default
+                  CancellationToken token = default
                 , ILogger logger = null
             )
 #if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -113,7 +113,7 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                return _publisher.PublishAsync<TMessage>(cancelToken, logger);
+                return _publisher.PublishAsync<TMessage>(token, logger);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -121,7 +121,7 @@ namespace ZBase.Foundation.PubSub
 #endif
             public UniTask PublishAsync<TMessage>(
                   TMessage message
-                , CancellationToken cancelToken = default
+                , CancellationToken token = default
                 , ILogger logger = null
             )
 #if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
@@ -135,7 +135,109 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                return _publisher.PublishAsync(message, cancelToken, logger);
+                return _publisher.PublishAsync(message, token, logger);
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public void PublishWithContext<TMessage>(
+                  CancellationToken token = default
+                , ILogger logger = null
+                , [CallerLineNumber] int callerLineNumber = 0
+                , [CallerMemberName] string callerMemberName = ""
+                , [CallerFilePath] string callerFilePath = ""
+            )
+#if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : new()
+#else
+                where TMessage : IMessage, new()
+#endif
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return;
+                }
+#endif
+
+                _publisher.PublishWithContext<TMessage>(token, logger, callerLineNumber, callerMemberName, callerFilePath);
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public void PublishWithContext<TMessage>(
+                  TMessage message
+                , CancellationToken token = default
+                , ILogger logger = null
+                , [CallerLineNumber] int callerLineNumber = 0
+                , [CallerMemberName] string callerMemberName = ""
+                , [CallerFilePath] string callerFilePath = ""
+            )
+#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : IMessage
+#endif
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return;
+                }
+#endif
+
+                _publisher.PublishWithContext(message, token, logger, callerLineNumber, callerMemberName, callerFilePath);
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public UniTask PublishWithContextAsync<TMessage>(
+                  CancellationToken token = default
+                , ILogger logger = null
+                , [CallerLineNumber] int callerLineNumber = 0
+                , [CallerMemberName] string callerMemberName = ""
+                , [CallerFilePath] string callerFilePath = ""
+            )
+#if ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : new()
+#else
+                where TMessage : IMessage, new()
+#endif
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return UniTask.CompletedTask;
+                }
+#endif
+
+                return _publisher.PublishWithContextAsync<TMessage>(token, logger, callerLineNumber, callerMemberName, callerFilePath);
+            }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+            public UniTask PublishWithContextAsync<TMessage>(
+                  TMessage message
+                , CancellationToken token = default
+                , ILogger logger = null
+                , [CallerLineNumber] int callerLineNumber = 0
+                , [CallerMemberName] string callerMemberName = ""
+                , [CallerFilePath] string callerFilePath = ""
+            )
+#if !ZBASE_FOUNDATION_PUBSUB_RELAX_MODE
+                where TMessage : IMessage
+#endif
+            {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+                if (Validate(logger) == false)
+                {
+                    return UniTask.CompletedTask;
+                }
+#endif
+
+                return _publisher.PublishWithContextAsync(message, token, logger, callerLineNumber, callerMemberName, callerFilePath);
             }
 
 #if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__

@@ -35,9 +35,9 @@ namespace ZBase.Foundation.PubSub
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly void Publish(CancellationToken cancelToken = default, ILogger logger = null)
+        public readonly void Publish(CancellationToken token = default, ILogger logger = null)
         {
-            Publish(new TMessage(), cancelToken, logger);
+            Publish(new TMessage(), token, logger);
         }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -45,30 +45,24 @@ namespace ZBase.Foundation.PubSub
 #endif
         public readonly void Publish(
               TMessage message
-            , CancellationToken cancelToken = default
+            , CancellationToken token = default
             , ILogger logger = null
         )
         {
 #if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
-            if (Validate() == false)
+            if (Validate(message, logger) == false)
             {
-                return;
-            }
-
-            if (message == null)
-            {
-                (logger ?? DefaultLogger.Default).LogException(new System.ArgumentNullException(nameof(message)));
                 return;
             }
 #endif
 
-            _broker.PublishAsync(message, cancelToken, logger ?? DefaultLogger.Default).Forget();
+            _broker.PublishAsync(message, default, token, logger ?? DefaultLogger.Default).Forget();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public readonly UniTask PublishAsync(CancellationToken cancelToken = default, ILogger logger = null)
+        public readonly UniTask PublishAsync(CancellationToken token = default, ILogger logger = null)
         {
-            return PublishAsync(new TMessage(), cancelToken, logger);
+            return PublishAsync(new TMessage(), token, logger);
         }
 
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -76,39 +70,145 @@ namespace ZBase.Foundation.PubSub
 #endif
         public readonly UniTask PublishAsync(
               TMessage message
-            , CancellationToken cancelToken = default
+            , CancellationToken token = default
             , ILogger logger = null
         )
         {
 #if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
-            if (Validate() == false)
+            if (Validate(message, logger) == false)
             {
                 return UniTask.CompletedTask;
+            }
+#endif
+
+            return _broker.PublishAsync(message, default, token, logger ?? DefaultLogger.Default);
+        }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        public readonly void PublishWithContext(
+              CancellationToken token = default
+            , ILogger logger = null
+            , [CallerLineNumber] int callerLineNumber = 0
+            , [CallerMemberName] string callerMemberName = ""
+            , [CallerFilePath] string callerFilePath = ""
+        )
+        {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+            if (Validate(logger) == false)
+            {
+                return;
+            }
+#endif
+
+            var caller = new CallerInfo(callerLineNumber, callerMemberName, callerFilePath);
+            var context = new PublishingContext(caller);
+            _broker.PublishAsync(new TMessage(), context, token, logger ?? DefaultLogger.Default).Forget();
+        }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        public readonly void PublishWithContext(
+              TMessage message
+            , CancellationToken token = default
+            , ILogger logger = null
+            , [CallerLineNumber] int callerLineNumber = 0
+            , [CallerMemberName] string callerMemberName = ""
+            , [CallerFilePath] string callerFilePath = ""
+        )
+        {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+            if (Validate(message, logger) == false)
+            {
+                return;
+            }
+#endif
+
+            var caller = new CallerInfo(callerLineNumber, callerMemberName, callerFilePath);
+            var context = new PublishingContext(caller);
+            _broker.PublishAsync(message, context, token, logger ?? DefaultLogger.Default).Forget();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly UniTask PublishWithContextAsync(
+              CancellationToken token = default
+            , ILogger logger = null
+            , [CallerLineNumber] int callerLineNumber = 0
+            , [CallerMemberName] string callerMemberName = ""
+            , [CallerFilePath] string callerFilePath = ""
+        )
+        {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+            if (Validate(logger) == false)
+            {
+                return UniTask.CompletedTask;
+            }
+#endif
+
+            var caller = new CallerInfo(callerLineNumber, callerMemberName, callerFilePath);
+            var context = new PublishingContext(caller);
+            return _broker.PublishAsync(new TMessage(), context, token, logger ?? DefaultLogger.Default);
+        }
+
+#if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        public readonly UniTask PublishWithContextAsync(
+              TMessage message
+            , CancellationToken token = default
+            , ILogger logger = null
+            , [CallerLineNumber] int callerLineNumber = 0
+            , [CallerMemberName] string callerMemberName = ""
+            , [CallerFilePath] string callerFilePath = ""
+        )
+        {
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+            if (Validate(message, logger) == false)
+            {
+                return UniTask.CompletedTask;
+            }
+#endif
+
+            var caller = new CallerInfo(callerLineNumber, callerMemberName, callerFilePath);
+            var context = new PublishingContext(caller);
+            return _broker.PublishAsync(message, context, token, logger ?? DefaultLogger.Default);
+        }
+
+#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
+        private readonly bool Validate(ILogger logger)
+        {
+            if (_broker == null)
+            {
+                (logger ?? DefaultLogger.Default).LogError(
+                    $"{GetType()} must be retrieved via `{nameof(MessagePublisher)}.{nameof(MessagePublisher.Cache)}` API"
+                );
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private readonly bool Validate(TMessage message, ILogger logger)
+        {
+            if (_broker == null)
+            {
+                (logger ?? DefaultLogger.Default).LogError(
+                    $"{GetType()} must be retrieved via `{nameof(MessagePublisher)}.{nameof(MessagePublisher.Cache)}` API"
+                );
+
+                return false;
             }
 
             if (message == null)
             {
                 (logger ?? DefaultLogger.Default).LogException(new System.ArgumentNullException(nameof(message)));
-                return UniTask.CompletedTask;
-            }
-#endif
-
-            return _broker.PublishAsync(message, cancelToken, logger ?? DefaultLogger.Default);
-        }
-
-#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
-        private readonly bool Validate()
-        {
-            if (_broker != null)
-            {
-                return true;
+                return false;
             }
 
-            UnityEngine.Debug.LogError(
-                $"{GetType()} must be retrieved via `{nameof(MessagePublisher)}.{nameof(MessagePublisher.Cache)}` API"
-            );
-
-            return false;
+            return true;
         }
 #endif
     }

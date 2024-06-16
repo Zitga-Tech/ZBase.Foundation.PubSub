@@ -33,7 +33,7 @@ namespace ZBase.Foundation.PubSub.Internals
 
         public bool IsCached => _refCount > 0;
 
-        public async UniTask PublishAsync(TMessage message, CancellationToken cancelToken, ILogger logger)
+        public async UniTask PublishAsync(TMessage message, PublishingContext context, CancellationToken token, ILogger logger)
         {
             var handlersArray = GetAllHandlers(logger);
 
@@ -50,12 +50,12 @@ namespace ZBase.Foundation.PubSub.Internals
 
                 for (var i = 0; i < length; i++)
                 {
-                    if (cancelToken.IsCancellationRequested)
+                    if (token.IsCancellationRequested)
                     {
                         break;
                     }
 
-                    await PublishAsync(handlers[i], message, cancelToken, TaskArrayPool, logger);
+                    await PublishAsync(handlers[i], message, context, token, TaskArrayPool, logger);
                 }
             }
 #if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
@@ -119,7 +119,8 @@ namespace ZBase.Foundation.PubSub.Internals
         private static async UniTask PublishAsync(
               ZCPG.ValueArray<IHandler<TMessage>> handlers
             , TMessage message
-            , CancellationToken cancelToken
+            , PublishingContext context
+            , CancellationToken token
             , CappedArrayPool<UniTask> taskArrayPool
             , ILogger logger
         )
@@ -139,7 +140,7 @@ namespace ZBase.Foundation.PubSub.Internals
                 try
 #endif
                 {
-                    tasks[i] = items[i]?.Handle(message, cancelToken) ?? UniTask.CompletedTask;
+                    tasks[i] = items[i]?.Handle(message, context, token) ?? UniTask.CompletedTask;
                 }
 #if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
                 catch (Exception ex)

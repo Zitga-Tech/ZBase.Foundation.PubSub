@@ -4,12 +4,12 @@ using Cysharp.Threading.Tasks;
 
 namespace ZBase.Foundation.PubSub.Internals
 {
-    internal sealed class HandlerMessage<TMessage> : IHandler<TMessage>
+    internal sealed class HandlerFuncMessageToken<TMessage> : IHandler<TMessage>
     {
         private readonly HandlerId _id;
-        private MessageHandler<TMessage> _handler;
+        private Func<TMessage, CancellationToken, UniTask> _handler;
 
-        public HandlerMessage(MessageHandler<TMessage> handler)
+        public HandlerFuncMessageToken(Func<TMessage, CancellationToken, UniTask> handler)
         {
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
             _id = new(handler);
@@ -22,23 +22,23 @@ namespace ZBase.Foundation.PubSub.Internals
             _handler = null;
         }
 
-        public UniTask Handle(TMessage message, CancellationToken cancelToken)
+        public UniTask Handle(TMessage message, PublishingContext context, CancellationToken token)
         {
-            if (cancelToken.IsCancellationRequested)
+            if (token.IsCancellationRequested)
             {
                 return UniTask.CompletedTask;
             }
 
-            return _handler?.Invoke(message, cancelToken) ?? UniTask.CompletedTask;
+            return _handler?.Invoke(message, token) ?? UniTask.CompletedTask;
         }
     }
 
-    internal sealed class HandlerFuncCancelToken<TMessage> : IHandler<TMessage>
+    internal sealed class HandlerFuncToken<TMessage> : IHandler<TMessage>
     {
         private readonly HandlerId _id;
         private Func<CancellationToken, UniTask> _handler;
 
-        public HandlerFuncCancelToken(Func<CancellationToken, UniTask> handler)
+        public HandlerFuncToken(Func<CancellationToken, UniTask> handler)
         {
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
             _id = new(handler);
@@ -51,14 +51,14 @@ namespace ZBase.Foundation.PubSub.Internals
             _handler = null;
         }
 
-        public UniTask Handle(TMessage message, CancellationToken cancelToken)
+        public UniTask Handle(TMessage message, PublishingContext context, CancellationToken token)
         {
-            if (cancelToken.IsCancellationRequested)
+            if (token.IsCancellationRequested)
             {
                 return UniTask.CompletedTask;
             }
 
-            return _handler?.Invoke(cancelToken) ?? UniTask.CompletedTask;
+            return _handler?.Invoke(token) ?? UniTask.CompletedTask;
         }
     }
 
@@ -80,9 +80,9 @@ namespace ZBase.Foundation.PubSub.Internals
             _handler = null;
         }
 
-        public UniTask Handle(TMessage message, CancellationToken cancelToken)
+        public UniTask Handle(TMessage message, PublishingContext context, CancellationToken token)
         {
-            if (cancelToken.IsCancellationRequested)
+            if (token.IsCancellationRequested)
             {
                 return UniTask.CompletedTask;
             }
@@ -109,9 +109,9 @@ namespace ZBase.Foundation.PubSub.Internals
             _handler = null;
         }
 
-        public UniTask Handle(TMessage message, CancellationToken cancelToken)
+        public UniTask Handle(TMessage message, PublishingContext context, CancellationToken token)
         {
-            if (cancelToken.IsCancellationRequested)
+            if (token.IsCancellationRequested)
             {
                 return UniTask.CompletedTask;
             }
@@ -138,9 +138,9 @@ namespace ZBase.Foundation.PubSub.Internals
             _handler = null;
         }
 
-        public UniTask Handle(TMessage message, CancellationToken cancelToken)
+        public UniTask Handle(TMessage message, PublishingContext context, CancellationToken token)
         {
-            if (cancelToken.IsCancellationRequested)
+            if (token.IsCancellationRequested)
             {
                 return UniTask.CompletedTask;
             }
@@ -168,9 +168,9 @@ namespace ZBase.Foundation.PubSub.Internals
             _handler = null;
         }
 
-        public UniTask Handle(TMessage message, CancellationToken cancelToken)
+        public UniTask Handle(TMessage message, PublishingContext context, CancellationToken token)
         {
-            if (cancelToken.IsCancellationRequested)
+            if (token.IsCancellationRequested)
             {
                 return UniTask.CompletedTask;
             }

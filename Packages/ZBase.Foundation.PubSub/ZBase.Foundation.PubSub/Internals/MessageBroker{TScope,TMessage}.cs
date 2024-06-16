@@ -14,7 +14,8 @@ namespace ZBase.Foundation.PubSub.Internals
 
         public UniTask PublishAsync(
               TScope scope, TMessage message
-            , CancellationToken cancelToken
+            , PublishingContext context
+            , CancellationToken token
             , ILogger logger
         )
         {
@@ -24,7 +25,7 @@ namespace ZBase.Foundation.PubSub.Internals
             {
                 if (scopedBrokers.TryGetValue(scope, out var broker))
                 {
-                    return broker.PublishAsync(message, cancelToken, logger);
+                    return broker.PublishAsync(message, context, token, logger);
                 }
 
                 return UniTask.CompletedTask;
