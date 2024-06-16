@@ -58,7 +58,7 @@ namespace ZBase.Foundation.PubSub.Samples
             subscriber.Subscribe<FrameMessage>(FrameHandlerAsync).AddTo(subscriptions);
 
             var stateSubscriber = subscriber.WithState(this);
-            stateSubscriber.Subscribe<DeltaTimeMessage>(static (x, msg) => x.SetDeltaTimeText(msg)).AddTo(subscriptions);
+            stateSubscriber.Subscribe<DeltaTimeMessage>(static (x, msg, ctx) => x.SetDeltaTimeText(msg, ctx)).AddTo(subscriptions);
 
             Debug.Log("System has subscribed to all messages.");
         }
@@ -139,7 +139,7 @@ namespace ZBase.Foundation.PubSub.Samples
             if (Input.GetKeyUp(KeyCode.Alpha7))
             {
                 var cachedPub = _cachedDeltaTimePublisher;
-                cachedPub.Publish(new DeltaTimeMessage { value = Time.deltaTime });
+                cachedPub.PublishWithContext(new DeltaTimeMessage { value = Time.deltaTime });
                 return;
             }
         }
@@ -163,7 +163,7 @@ namespace ZBase.Foundation.PubSub.Samples
             Debug.Log($"{msg.GetType().Name}: done");
         }
 
-        private static async UniTask CancellableTimeHandlerAsync(CancellableTimeMessage msg, CancellationToken cancelToken)
+        private static async UniTask CancellableTimeHandlerAsync(CancellableTimeMessage msg, CancellationToken token)
         {
             const string NAME = nameof(CancellableTimeHandlerAsync);
 
@@ -171,7 +171,7 @@ namespace ZBase.Foundation.PubSub.Samples
 
             try
             {
-                await UniTask.Delay(TimeSpan.FromSeconds(msg.seconds), cancellationToken: cancelToken);
+                await UniTask.Delay(TimeSpan.FromSeconds(msg.seconds), cancellationToken: token);
             }
             catch
             {
@@ -192,9 +192,9 @@ namespace ZBase.Foundation.PubSub.Samples
             Debug.Log($"{msg.GetType().Name}: {NAME}: done");
         }
 
-        private void SetDeltaTimeText(DeltaTimeMessage msg)
+        private void SetDeltaTimeText(DeltaTimeMessage msg, PublishingContext ctx)
         {
-            Debug.Log($"{msg.GetType().Name}: {msg.value}");
+            Debug.Log($"{msg.GetType().Name}: {msg.value} <<-- {ctx.Caller.ToLog()}");
 
             _deltaTimeText.text = $"DT = {msg.value}";
         }

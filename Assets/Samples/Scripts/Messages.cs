@@ -35,4 +35,10 @@
     {
         public float value;
     }
+
+    public static class PublishContextExtensions
+    {
+        public static string ToLog(this CallerInfo self)
+            => $"[{self.CallerMemberName} @ {self.CallerFilePath}:{self.CallerLineNumber}]";
+    }
 }

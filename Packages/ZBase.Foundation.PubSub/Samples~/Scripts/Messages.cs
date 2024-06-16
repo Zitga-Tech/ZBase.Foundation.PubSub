@@ -21,8 +21,24 @@
         public float seconds;
     }
 
+    public struct CancellableTimeMessage : IMessage
+    {
+        public float seconds;
+    }
+
     public struct FrameMessage : IMessage
     {
         public int frames;
+    }
+
+    public struct DeltaTimeMessage : IMessage
+    {
+        public float value;
+    }
+
+    public static class PublishContextExtensions
+    {
+        public static string ToLog(this CallerInfo self)
+            => $"[{self.CallerMemberName} @ {self.CallerFilePath}:{self.CallerLineNumber}]";
     }
 }
