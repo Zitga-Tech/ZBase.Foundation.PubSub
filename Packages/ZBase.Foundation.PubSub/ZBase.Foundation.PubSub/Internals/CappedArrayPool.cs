@@ -10,8 +10,6 @@ namespace ZBase.Foundation.PubSub.Internals
     {
         internal const int INITIAL_BUCKET_SIZE = 4;
 
-        public static readonly T[] EmptyArray = new T[0];
-
         public static CappedArrayPool<T> Shared8Limit => s_shared8Limit;
 
         private readonly static bool s_isTManaged = RuntimeHelpers.IsReferenceOrContainsReferences<T>();
@@ -48,14 +46,14 @@ namespace ZBase.Foundation.PubSub.Internals
                     _buckets[i][j] = new T[arrayLength];
                 }
 
-                _tails[i] = _buckets[i].Length - 1;
+                _tails[i] = 0;
             }
         }
 
         public T[] Rent(int length)
         {
             if (length <= 0)
-                return EmptyArray;
+                return Array.Empty<T>();
 
             if (length > _buckets.Length)
                 return new T[length]; // Not supported
@@ -66,13 +64,19 @@ namespace ZBase.Foundation.PubSub.Internals
             {
                 var bucket = _buckets[i];
                 var tail = _tails[i];
+
                 if (tail >= bucket.Length)
                 {
                     Array.Resize(ref bucket, bucket.Length * 2);
                     _buckets[i] = bucket;
                 }
 
-                var result = bucket[tail] ?? new T[length];
+                if (bucket[tail] == null)
+                {
+                    bucket[tail] = new T[length];
+                }
+
+                var result = bucket[tail];
                 _tails[i] += 1;
                 return result;
             }
@@ -84,6 +88,7 @@ namespace ZBase.Foundation.PubSub.Internals
                 return;
 
             var i = array.Length - 1;
+
             lock (_syncRoot)
             {
                 if (s_isTManaged)
