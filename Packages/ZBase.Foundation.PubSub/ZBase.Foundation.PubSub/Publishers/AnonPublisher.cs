@@ -2,7 +2,6 @@
 using System.Runtime.CompilerServices;
 using Cysharp.Threading.Tasks;
 using ZBase.Foundation.PubSub.Internals;
-using ZBase.Foundation.Singletons;
 
 namespace ZBase.Foundation.PubSub
 {
@@ -13,12 +12,9 @@ namespace ZBase.Foundation.PubSub
     {
         private readonly MessagePublisher _publisher;
 
-        internal AnonPublisher(
-              SingletonContainer<MessageBroker> brokers
-            , CappedArrayPool<UniTask> taskArrayPool
-        )
+        internal AnonPublisher(CappedArrayPool<UniTask> taskArrayPool)
         {
-            _publisher = new(brokers, taskArrayPool);
+            _publisher = new(taskArrayPool);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

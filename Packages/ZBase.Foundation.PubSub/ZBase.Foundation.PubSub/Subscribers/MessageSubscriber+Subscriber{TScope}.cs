@@ -48,7 +48,9 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                if (_subscriber._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
+                var broker = BrokerStore<TScope, TMessage>.Get();
+
+                if (broker != null)
                 {
                     broker.Compress(Scope);
                 }
@@ -526,25 +528,9 @@ namespace ZBase.Foundation.PubSub
 #endif
 
                 var taskArrayPool = _subscriber._taskArrayPool;
-                var brokers = _subscriber._brokers;
-
-                lock (brokers)
-                {
-                    if (brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker) == false)
-                    {
-                        broker = new MessageBroker<TScope, TMessage>();
-
-                        if (brokers.TryAdd(broker) == false)
-                        {
-                            broker?.Dispose();
-                            subscription = Subscription<TMessage>.None;
-                            return false;
-                        }
-                    }
-
-                    subscription = broker.Subscribe(Scope, handler, order, taskArrayPool);
-                    return true;
-                }
+                var broker = BrokerStore<TScope, TMessage>.GetOrCreate();
+                subscription = broker.Subscribe(Scope, handler, order, taskArrayPool);
+                return true;
             }
 
             [Conditional("__ZBASE_FOUNDATION_PUBSUB_VALIDATION__"), DoesNotReturn]

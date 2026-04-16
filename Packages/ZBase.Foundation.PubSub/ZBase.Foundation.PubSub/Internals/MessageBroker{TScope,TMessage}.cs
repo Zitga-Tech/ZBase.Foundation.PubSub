@@ -1,16 +1,61 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
-using ZBase.Collections.Pooled.Generic;
-using ZBase.Collections.Pooled.Generic.Internals.Unsafe;
 using Cysharp.Threading.Tasks;
 
 namespace ZBase.Foundation.PubSub.Internals
 {
     internal sealed class MessageBroker<TScope, TMessage> : MessageBroker
     {
-        private readonly ArrayDictionary<TScope, MessageBroker<TMessage>> _scopedBrokers = new();
+        private readonly Dictionary<TScope, int> _scopeToIndex = new();
+        private MessageBroker<TMessage>[] _brokers = new MessageBroker<TMessage>[4];
+        private int _nextIndex;
 
-        public bool IsEmpty => _scopedBrokers.Count <= 0;
+        public bool IsEmpty => _nextIndex <= 0 || AreAllEmpty();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int FindIndex(TScope scope)
+        {
+            return _scopeToIndex.TryGetValue(scope, out var index) ? index : -1;
+        }
+
+        private int FindOrCreateIndex(TScope scope, CappedArrayPool<UniTask> taskArrayPool)
+        {
+            if (_scopeToIndex.TryGetValue(scope, out var index))
+            {
+                if (_brokers[index] == null)
+                {
+                    var newBroker = new MessageBroker<TMessage>();
+                    newBroker.TaskArrayPool = taskArrayPool;
+                    _brokers[index] = newBroker;
+                }
+
+                return index;
+            }
+
+            index = _nextIndex++;
+
+            if (index >= _brokers.Length)
+            {
+                Array.Resize(ref _brokers, _brokers.Length * 2);
+            }
+
+            var broker = new MessageBroker<TMessage>();
+            broker.TaskArrayPool = taskArrayPool;
+            _brokers[index] = broker;
+            _scopeToIndex[scope] = index;
+            return index;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void EnsureCapacity(int index)
+        {
+            if (index >= _brokers.Length)
+            {
+                Array.Resize(ref _brokers, Math.Max(_brokers.Length * 2, index + 1));
+            }
+        }
 
         public UniTask PublishAsync(
               TScope scope, TMessage message
@@ -19,13 +64,18 @@ namespace ZBase.Foundation.PubSub.Internals
             , ILogger logger
         )
         {
-            var scopedBrokers = _scopedBrokers;
-
-            lock (scopedBrokers)
+            lock (_scopeToIndex)
             {
-                if (scopedBrokers.TryGetValue(scope, out var broker))
+                var index = FindIndex(scope);
+
+                if (index >= 0)
                 {
-                    return broker.PublishAsync(message, context, token, logger);
+                    var broker = _brokers[index];
+
+                    if (broker != null)
+                    {
+                        return broker.PublishAsync(message, context, token, logger);
+                    }
                 }
 
                 return UniTask.CompletedTask;
@@ -39,32 +89,19 @@ namespace ZBase.Foundation.PubSub.Internals
             , CappedArrayPool<UniTask> taskArrayPool
         )
         {
-            var scopedBrokers = _scopedBrokers;
-
-            lock (scopedBrokers)
+            lock (_scopeToIndex)
             {
-                if (scopedBrokers.TryGetValue(scope, out var broker) == false)
-                {
-                    scopedBrokers[scope] = broker = new MessageBroker<TMessage>();
-                    broker.TaskArrayPool = taskArrayPool;
-                }
-
-                return broker.Subscribe(handler, order);
+                var index = FindOrCreateIndex(scope, taskArrayPool);
+                return _brokers[index].Subscribe(handler, order);
             }
         }
 
         public MessageBroker<TMessage> Cache(TScope scope, CappedArrayPool<UniTask> taskArrayPool)
         {
-            var scopedBrokers = _scopedBrokers;
-
-            lock (scopedBrokers)
+            lock (_scopeToIndex)
             {
-                if (scopedBrokers.TryGetValue(scope, out var broker) == false)
-                {
-                    scopedBrokers[scope] = broker = new MessageBroker<TMessage>();
-                    broker.TaskArrayPool = taskArrayPool;
-                }
-
+                var index = FindOrCreateIndex(scope, taskArrayPool);
+                var broker = _brokers[index];
                 broker.OnCache();
                 return broker;
             }
@@ -72,60 +109,44 @@ namespace ZBase.Foundation.PubSub.Internals
 
         public override void Dispose()
         {
-            var scopedBrokers = _scopedBrokers;
-
-            lock (scopedBrokers)
+            lock (_scopeToIndex)
             {
-                scopedBrokers.GetUnsafeValues(out var brokerArray, out var count);
-                var brokers = brokerArray.AsSpan(0, count);
-
-                foreach (var broker in brokers)
+                for (var i = 0; i < _nextIndex; i++)
                 {
-                    broker?.Dispose();
+                    _brokers[i]?.Dispose();
+                    _brokers[i] = null;
                 }
 
-                scopedBrokers.Dispose();
+                _scopeToIndex.Clear();
+                _nextIndex = 0;
             }
         }
 
         public override void Compress()
         {
-            var scopedBrokers = _scopedBrokers;
-
-            lock (scopedBrokers)
+            lock (_scopeToIndex)
             {
-                scopedBrokers.GetUnsafe(out var keys, out var values, out var count);
-
-                var scopesToRemove = ValueList<TScope>.Create(count);
-
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                try
-#endif
+                for (var i = _nextIndex - 1; i >= 0; i--)
                 {
-                    for (var i = count - 1; i >= 0; i--)
-                    {
-                        var broker = values[i];
-                        broker.Compress();
+                    var broker = _brokers[i];
 
-                        if (broker.IsEmpty)
-                        {
-                            broker.Dispose();
-                            scopesToRemove.Add(keys[i].Key);
-                        }
+                    if (broker == null)
+                    {
+                        continue;
                     }
 
-                    scopesToRemove.GetUnsafe(out var scopes, out count);
-
-                    for (var i = count - 1; i >= 0; i--)
+                    if (broker.IsCached)
                     {
-                        _scopedBrokers.Remove(scopes[i]);
+                        continue;
                     }
-                }
-#if !__ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
-                finally
-#endif
-                {
-                    scopesToRemove.Dispose();
+
+                    broker.Compress();
+
+                    if (broker.IsEmpty)
+                    {
+                        broker.Dispose();
+                        _brokers[i] = null;
+                    }
                 }
             }
         }
@@ -135,16 +156,18 @@ namespace ZBase.Foundation.PubSub.Internals
         /// </summary>
         public void Compress(TScope scope)
         {
-            var scopedBrokers = _scopedBrokers;
-
-            lock (scopedBrokers)
+            lock (_scopeToIndex)
             {
-                if (scopedBrokers.TryGetValue(scope, out var broker) == false)
+                var index = FindIndex(scope);
+
+                if (index < 0)
                 {
                     return;
                 }
 
-                if (broker.IsCached)
+                var broker = _brokers[index];
+
+                if (broker == null || broker.IsCached)
                 {
                     return;
                 }
@@ -153,10 +176,25 @@ namespace ZBase.Foundation.PubSub.Internals
 
                 if (broker.IsEmpty)
                 {
-                    scopedBrokers.Remove(scope);
+                    _brokers[index] = null;
                     broker.Dispose();
                 }
             }
+        }
+
+        private bool AreAllEmpty()
+        {
+            for (var i = 0; i < _nextIndex; i++)
+            {
+                var broker = _brokers[i];
+
+                if (broker != null && broker.IsEmpty == false)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 }

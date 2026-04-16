@@ -8,7 +8,6 @@ using Cysharp.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using ZBase.Foundation.PubSub.Internals;
-using ZBase.Foundation.Singletons;
 
 namespace ZBase.Foundation.PubSub
 {
@@ -19,12 +18,9 @@ namespace ZBase.Foundation.PubSub
     {
         private readonly MessageSubscriber _subscriber;
 
-        internal AnonSubscriber(
-              SingletonContainer<MessageBroker> brokers
-            , CappedArrayPool<UniTask> taskArrayPool
-        )
+        internal AnonSubscriber(CappedArrayPool<UniTask> taskArrayPool)
         {
-            _subscriber = new(brokers, taskArrayPool);
+            _subscriber = new(taskArrayPool);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

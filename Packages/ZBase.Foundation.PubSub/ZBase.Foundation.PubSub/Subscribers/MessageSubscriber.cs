@@ -2,21 +2,15 @@
 using System.Runtime.CompilerServices;
 using Cysharp.Threading.Tasks;
 using ZBase.Foundation.PubSub.Internals;
-using ZBase.Foundation.Singletons;
 
 namespace ZBase.Foundation.PubSub
 {
     public partial class MessageSubscriber
     {
-        private readonly SingletonContainer<MessageBroker> _brokers;
         private readonly CappedArrayPool<UniTask> _taskArrayPool;
 
-        internal MessageSubscriber(
-              SingletonContainer<MessageBroker> brokers
-            , CappedArrayPool<UniTask> taskArrayPool
-        )
+        internal MessageSubscriber(CappedArrayPool<UniTask> taskArrayPool)
         {
-            _brokers = brokers;
             _taskArrayPool = taskArrayPool;
         }
 

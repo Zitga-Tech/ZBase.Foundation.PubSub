@@ -42,28 +42,9 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                var brokers = _publisher._brokers;
-
-                lock (brokers)
-                {
-                    if (brokers.TryGet<MessageBroker<TScope, TMessage>>(out var scopedBroker) == false)
-                    {
-                        scopedBroker = new MessageBroker<TScope, TMessage>();
-
-                        if (brokers.TryAdd(scopedBroker) == false)
-                        {
-#if __ZBASE_FOUNDATION_PUBSUB_VALIDATION__
-                            LogUnexpectedErrorWhenCache<TMessage>(logger);
-#endif
-
-                            scopedBroker?.Dispose();
-                            return default;
-                        }
-                    }
-
-                    var broker = scopedBroker.Cache(Scope, _publisher._taskArrayPool);
-                    return new CachedPublisher<TMessage>(broker);
-                }
+                var scopedBroker = BrokerStore<TScope, TMessage>.GetOrCreate();
+                var broker = scopedBroker.Cache(Scope, _publisher._taskArrayPool);
+                return new CachedPublisher<TMessage>(broker);
             }
             
 #if __ZBASE_FOUNDATION_PUBSUB_NO_VALIDATION__
@@ -86,7 +67,9 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
+                var broker = BrokerStore<TScope, TMessage>.Get();
+
+                if (broker != null)
                 {
                     broker.PublishAsync(Scope, new TMessage(), default, token, logger ?? DefaultLogger.Default).Forget();
                 }
@@ -117,7 +100,9 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
+                var broker = BrokerStore<TScope, TMessage>.Get();
+
+                if (broker != null)
                 {
                     broker.PublishAsync(Scope, message, default, token, logger ?? DefaultLogger.Default).Forget();
                 }
@@ -149,7 +134,9 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
+                var broker = BrokerStore<TScope, TMessage>.Get();
+
+                if (broker != null)
                 {
                     return broker.PublishAsync(Scope, new TMessage(), default, token, logger ?? DefaultLogger.Default);
                 }
@@ -183,7 +170,9 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
+                var broker = BrokerStore<TScope, TMessage>.Get();
+
+                if (broker != null)
                 {
                     return broker.PublishAsync(Scope, message, default, token, logger ?? DefaultLogger.Default);
                 }
@@ -221,7 +210,9 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
+                var broker = BrokerStore<TScope, TMessage>.Get();
+
+                if (broker != null)
                 {
                     var caller = new CallerInfo(callerLineNumber, callerMemberName, callerFilePath);
                     var context = new PublishingContext(caller);
@@ -257,7 +248,9 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
+                var broker = BrokerStore<TScope, TMessage>.Get();
+
+                if (broker != null)
                 {
                     var caller = new CallerInfo(callerLineNumber, callerMemberName, callerFilePath);
                     var context = new PublishingContext(caller);
@@ -294,7 +287,9 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
+                var broker = BrokerStore<TScope, TMessage>.Get();
+
+                if (broker != null)
                 {
                     var caller = new CallerInfo(callerLineNumber, callerMemberName, callerFilePath);
                     var context = new PublishingContext(caller);
@@ -333,7 +328,9 @@ namespace ZBase.Foundation.PubSub
                 }
 #endif
 
-                if (_publisher._brokers.TryGet<MessageBroker<TScope, TMessage>>(out var broker))
+                var broker = BrokerStore<TScope, TMessage>.Get();
+
+                if (broker != null)
                 {
                     var caller = new CallerInfo(callerLineNumber, callerMemberName, callerFilePath);
                     var context = new PublishingContext(caller);
@@ -401,13 +398,6 @@ namespace ZBase.Foundation.PubSub
             {
                 (logger ?? DefaultLogger.Default).LogWarning(
                     $"Found no subscription for `{typeof(TMessage)}` in scope `{scope}`"
-                );
-            }
-
-            private static void LogUnexpectedErrorWhenCache<TMessage>(ILogger logger)
-            {
-                (logger ?? DefaultLogger.Default).LogError(
-                    $"Something went wrong when registering a new instance of {typeof(MessageBroker<TScope, TMessage>)}!"
                 );
             }
 #endif
